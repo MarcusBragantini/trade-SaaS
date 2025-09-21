@@ -9,10 +9,11 @@ const {
   validateUpdateProfile, 
   validateDerivCredentials 
 } = require('../middleware/validation');
+const { authLimiter } = require('../middleware/rateLimiting');
 const router = express.Router();
 
 // Register new user
-router.post('/register', validateRegistration, async (req, res) => {
+router.post('/register', authLimiter, validateRegistration, async (req, res) => {
   try {
     console.log('Registration attempt:', req.body);
     const { name, email, password } = req.body;
@@ -78,7 +79,7 @@ router.use((req, res, next) => {
 });
 
 // Login user - versão simplificada para debug
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   console.log('=== TENTATIVA DE LOGIN INICIADA ===');
   
   try {

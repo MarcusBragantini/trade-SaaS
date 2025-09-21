@@ -120,6 +120,10 @@
                         <i class="fas fa-chart-bar"></i>
                         <span>Trading</span>
                     </a>
+                    <a href="#" class="nav-item" data-section="auto-trading">
+                        <i class="fas fa-robot"></i>
+                        <span>Auto Trading</span>
+                    </a>
                     <a href="#" class="nav-item" data-section="analysis">
                         <i class="fas fa-brain"></i>
                         <span>Análise IA</span>
@@ -273,11 +277,7 @@
                                 <div class="chart-header">
                                     <div class="asset-selector">
                                         <select id="asset-select">
-                                            <option value="EURUSD">EUR/USD</option>
-                                            <option value="GBPUSD">GBP/USD</option>
-                                            <option value="USDJPY">USD/JPY</option>
-                                            <option value="AUDUSD">AUD/USD</option>
-                                            <option value="USDCAD">USD/CAD</option>
+                                            <option value="">Carregando ativos...</option>
                                         </select>
                                     </div>
                                     <div class="timeframe-selector">
@@ -291,51 +291,93 @@
                                     </div>
                                 </div>
                                 <div id="trading-view-chart" class="trading-view">
-                                    <div class="chart-placeholder">
-                                        <i class="fas fa-chart-line"></i>
-                                        <p>Gráfico será carregado após configuração da API</p>
-                                    </div>
+                                    <canvas id="candlestick-chart" width="800" height="400"></canvas>
                                 </div>
                             </div>
                         </div>
 
                         <div class="trading-panel">
                             <div class="trade-execution">
-                                <h3>Executar Trade</h3>
+                                <div class="form-header">
+                                    <h3><i class="fas fa-chart-line"></i> Executar Trade</h3>
+                                    <p class="form-description">Configure seu trade com controles avançados e IA</p>
+                                </div>
                                 <div class="trade-form">
                                     <div class="form-group">
                                         <label>Ativo</label>
                                         <select id="trade-asset">
-                                            <option value="EURUSD">EUR/USD</option>
-                                            <option value="GBPUSD">GBP/USD</option>
-                                            <option value="USDJPY">USD/JPY</option>
-                                            <option value="AUDUSD">AUD/USD</option>
-                                            <option value="USDCAD">USD/CAD</option>
+                                            <option value="">Carregando ativos...</option>
                                         </select>
+                                        <small class="help-text">
+                                            🟢 = Mercado Aberto | 🔴 = Mercado Fechado | 24/7 = Sempre Aberto
+                                        </small>
                                     </div>
 
                                     <div class="form-group">
                                         <label>Valor da Operação ($)</label>
-                                        <input type="number" id="trade-amount" min="1" value="10">
+                                        <input type="number" id="trade-amount" min="1" value="10" step="0.01">
+                                    </div>
+
+                                    <div class="trade-controls-grid">
+                                        <div class="form-group">
+                                            <label>Stop Loss (%)</label>
+                                            <input type="number" id="stop-loss" min="0.1" max="50" value="2" step="0.1">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Take Profit (%)</label>
+                                            <input type="number" id="take-profit" min="0.1" max="100" value="5" step="0.1">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Valor de Entrada ($)</label>
+                                        <input type="number" id="entry-price" min="0.0001" step="0.0001" placeholder="Preço atual">
                                     </div>
 
                                     <div class="trade-direction">
                                         <button class="btn btn-success btn-direction" data-direction="call">
-                                            <i class="fas fa-arrow-up"></i> COMPRA
+                                            <i class="fas fa-arrow-up"></i> 
+                                            <span>COMPRA</span>
+                                            <small>Preço sobe</small>
                                         </button>
                                         <button class="btn btn-danger btn-direction" data-direction="put">
-                                            <i class="fas fa-arrow-down"></i> VENDA
+                                            <i class="fas fa-arrow-down"></i> 
+                                            <span>VENDA</span>
+                                            <small>Preço desce</small>
                                         </button>
+                                    </div>
+
+                                    <div class="ai-controls">
+                                        <div class="control-row">
+                                            <label class="switch">
+                                                <input type="checkbox" id="ai-decision-toggle" checked>
+                                                <span class="slider round"></span>
+                                            </label>
+                                            <div class="control-info">
+                                                <span class="control-title">IA decide execução</span>
+                                                <small class="control-desc">IA analisa antes de executar o trade</small>
+                                            </div>
+                                        </div>
+                                        <div class="control-row">
+                                            <label class="switch">
+                                                <input type="checkbox" id="emergency-stop-toggle">
+                                                <span class="slider round"></span>
+                                            </label>
+                                            <div class="control-info">
+                                                <span class="control-title">Parada de emergência</span>
+                                                <small class="control-desc">Bloqueia todos os trades</small>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="ai-recommendation" id="ai-recommendation">
                                         <div class="recommendation-header">
                                             <i class="fas fa-robot"></i>
-                                            <span>Recomendação da IA</span>
+                                            <span>Análise da IA</span>
                                         </div>
                                         <div class="recommendation-content">
                                             <span class="recommendation-text" id="ai-recommendation-text">
-                                                Configure a API para receber recomendações
+                                                Selecione um ativo e direção para análise
                                             </span>
                                             <span class="recommendation-confidence" id="ai-confidence">
                                                 Confiança: 0%
@@ -343,9 +385,28 @@
                                         </div>
                                     </div>
 
-                                    <button class="btn btn-primary btn-execute" id="execute-trade" disabled>
-                                        Executar Trade
-                                    </button>
+                                    <div class="trade-actions">
+                                        <button class="btn btn-primary btn-execute" id="execute-trade" disabled>
+                                            <i class="fas fa-play"></i> Executar Trade
+                                        </button>
+                                        <button class="btn btn-warning btn-force-execute" id="force-execute-trade" disabled style="display: none;">
+                                            <i class="fas fa-exclamation-triangle"></i> Forçar Execução
+                                        </button>
+                                        <button class="btn btn-danger btn-emergency" id="emergency-stop" disabled>
+                                            <i class="fas fa-stop"></i> Parada de Emergência
+                                        </button>
+                                    </div>
+
+                                    <div class="trade-status" id="trade-status">
+                                        <div class="status-item">
+                                            <span class="status-label">Status:</span>
+                                            <span class="status-value" id="trade-status-value">Aguardando configuração</span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="status-label">Risk/Reward:</span>
+                                            <span class="status-value" id="risk-reward-value">-</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -356,6 +417,130 @@
                                         <i class="fas fa-box-open"></i>
                                         <p>Nenhuma posição aberta</p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Auto Trading Section -->
+                <section id="auto-trading-section" class="content-section">
+                    <div class="section-header">
+                        <h1>Trading Automático</h1>
+                        <div class="header-actions">
+                            <button class="btn btn-success" id="start-auto-trading-btn">
+                                <i class="fas fa-play"></i> Iniciar
+                            </button>
+                            <button class="btn btn-danger" id="stop-auto-trading-btn" disabled>
+                                <i class="fas fa-stop"></i> Parar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="auto-trading-layout">
+                        <!-- Configuration Panel -->
+                        <div class="config-panel">
+                            <h3>Configurações</h3>
+                            <div class="config-grid">
+                                <div class="form-group">
+                                    <label for="auto-symbol">Símbolo</label>
+                                    <select id="auto-symbol" class="form-control">
+                                        <option value="BTCUSD">BTCUSD</option>
+                                        <option value="ETHUSD">ETHUSD</option>
+                                        <option value="ADAUSD">ADAUSD</option>
+                                        <option value="DOTUSD">DOTUSD</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="auto-stake">Stake ($)</label>
+                                    <input type="number" id="auto-stake" class="form-control" value="10" min="1" max="1000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="auto-duration">Duração</label>
+                                    <input type="number" id="auto-duration" class="form-control" value="5" min="1" max="60">
+                                </div>
+                                <div class="form-group">
+                                    <label for="auto-duration-unit">Unidade</label>
+                                    <select id="auto-duration-unit" class="form-control">
+                                        <option value="m">Minutos</option>
+                                        <option value="s">Segundos</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="auto-strategy">Estratégia</label>
+                                    <select id="auto-strategy" class="form-control">
+                                        <option value="trend_following">Seguimento de Tendência</option>
+                                        <option value="mean_reversion">Reversão à Média</option>
+                                        <option value="breakout">Breakout</option>
+                                        <option value="random">Aleatória</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Panel -->
+                        <div class="status-panel">
+                            <h3>Status do Trading</h3>
+                            <div class="status-grid">
+                                <div class="status-item">
+                                    <span class="status-label">Status:</span>
+                                    <span class="status-value" id="auto-status">Parado</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Símbolo:</span>
+                                    <span class="status-value" id="auto-current-symbol">-</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Último Preço:</span>
+                                    <span class="status-value" id="auto-last-price">-</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Trades Hoje:</span>
+                                    <span class="status-value" id="auto-trades-today">0</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Win Rate:</span>
+                                    <span class="status-value" id="auto-win-rate">0%</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Perda Total:</span>
+                                    <span class="status-value" id="auto-total-loss">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Management Panel -->
+                        <div class="risk-panel">
+                            <h3>Gerenciamento de Risco</h3>
+                            <div class="risk-controls">
+                                <div class="form-group">
+                                    <label for="max-daily-loss">Perda Diária Máxima ($)</label>
+                                    <input type="number" id="max-daily-loss" class="form-control" value="100" min="10" max="1000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="max-consecutive-losses">Perdas Consecutivas Máximas</label>
+                                    <input type="number" id="max-consecutive-losses" class="form-control" value="3" min="1" max="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="max-trades-per-day">Trades Máximos por Dia</label>
+                                    <input type="number" id="max-trades-per-day" class="form-control" value="50" min="5" max="200">
+                                </div>
+                                <button class="btn btn-warning" id="update-risk-limits-btn">
+                                    <i class="fas fa-shield-alt"></i> Atualizar Limites
+                                </button>
+                                <button class="btn btn-info" id="reactivate-trading-btn" disabled>
+                                    <i class="fas fa-play-circle"></i> Reativar Trading
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Log Panel -->
+                        <div class="log-panel">
+                            <h3>Log de Atividades</h3>
+                            <div class="log-container" id="auto-trading-log">
+                                <div class="log-entry">
+                                    <span class="log-time">[00:00:00]</span>
+                                    <span class="log-message">Sistema iniciado. Aguardando configuração...</span>
                                 </div>
                             </div>
                         </div>
@@ -377,10 +562,13 @@
                         <!-- Currency Selection -->
                         <div class="analysis-controls">
                             <div class="control-group">
-                                <label for="currency-selector">Moeda</label>
+                                <label for="currency-selector">Selecionar Ativo</label>
                                 <select id="currency-selector" class="form-control">
-                                    <option value="EURUSD">EUR/USD - Euro vs Dólar Americano</option>
+                                    <option value="">Carregando moedas...</option>
                                 </select>
+                                <small class="help-text">
+                                    🟢 = Mercado Aberto | 🔴 = Mercado Fechado | 24/7 = Sempre Aberto
+                                </small>
                             </div>
                             <div class="control-group">
                                 <button class="btn btn-primary" id="analyze-btn">
@@ -604,9 +792,11 @@ document.addEventListener('DOMContentLoaded', function() {
     <script>window.API_BASE = 'http://localhost:5001';</script>
     <script src="js/config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/trading.js"></script>
+    <script src="js/auto-trading.js"></script>
     <script src="js/subscription.js"></script>
     <script src="js/ai-analysis.js"></script>
 </body>

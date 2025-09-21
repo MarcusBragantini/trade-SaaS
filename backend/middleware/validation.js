@@ -144,20 +144,44 @@ const validateDerivCredentials = (req, res, next) => {
 
 // Schema de validação para execução de trades
 const tradeExecutionSchema = Joi.object({
+  asset: Joi.string()
+    .valid(
+      // Criptomoedas
+      'BTCUSD', 'ETHUSD', 'LTCUSD', 'XRPUSD', 'ADAUSD', 'DOTUSD', 'LINKUSD', 'UNIUSD',
+      // Sintéticas
+      'SYNTH1', 'SYNTH2', 'SYNTH3', 'SYNTH4', 'SYNTH5',
+      // Forex tradicionais
+      'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'NZDUSD', 'EURGBP', 'EURJPY',
+      // Commodities
+      'XAUUSD', 'XAGUSD', 'USOIL', 'UKOIL',
+      // Índices
+      'US30', 'US100', 'US500', 'UK100', 'GER30',
+      // Formatos antigos (compatibilidade)
+      'EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CAD'
+    )
+    .optional(),
   pair: Joi.string()
-    .valid('EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CAD', 'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD')
-    .required()
-    .messages({
-      'string.empty': 'O par de moedas é obrigatório',
-      'any.only': 'Par de moedas inválido'
-    }),
+    .valid(
+      // Criptomoedas
+      'BTCUSD', 'ETHUSD', 'LTCUSD', 'XRPUSD', 'ADAUSD', 'DOTUSD', 'LINKUSD', 'UNIUSD',
+      // Sintéticas
+      'SYNTH1', 'SYNTH2', 'SYNTH3', 'SYNTH4', 'SYNTH5',
+      // Forex tradicionais
+      'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'NZDUSD', 'EURGBP', 'EURJPY',
+      // Commodities
+      'XAUUSD', 'XAGUSD', 'USOIL', 'UKOIL',
+      // Índices
+      'US30', 'US100', 'US500', 'UK100', 'GER30',
+      // Formatos antigos (compatibilidade)
+      'EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CAD'
+    )
+    .optional(),
+  direction: Joi.string()
+    .valid('BUY', 'SELL', 'CALL', 'PUT', 'call', 'put', 'buy', 'sell')
+    .optional(),
   type: Joi.string()
-    .valid('BUY', 'SELL', 'CALL', 'PUT')
-    .required()
-    .messages({
-      'string.empty': 'O tipo de operação é obrigatório',
-      'any.only': 'Tipo de operação inválido'
-    }),
+    .valid('BUY', 'SELL', 'CALL', 'PUT', 'call', 'put', 'buy', 'sell')
+    .optional(),
   amount: Joi.number()
     .min(1)
     .max(10000)
@@ -172,8 +196,19 @@ const tradeExecutionSchema = Joi.object({
     .optional(),
   takeProfit: Joi.number()
     .min(0)
+    .optional(),
+  entryPrice: Joi.number()
+    .min(0)
+    .optional(),
+  aiDecision: Joi.boolean()
+    .optional(),
+  forced: Joi.boolean()
+    .optional(),
+  autoTrade: Joi.boolean()
+    .optional(),
+  aiAnalysis: Joi.object()
     .optional()
-});
+}).or('asset', 'pair').or('direction', 'type');
 
 // Middleware de validação para execução de trades
 const validateTradeExecution = (req, res, next) => {

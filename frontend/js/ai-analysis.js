@@ -1,19 +1,29 @@
 class AIAnalysisManager {
     constructor() {
-        this.currentSymbol = 'EURUSD';
+        this.currentSymbol = 'BTCUSD'; // Começar com uma cripto sempre aberta
         this.isAnalyzing = false;
         this.analysisInterval = null;
         this.availableCurrencies = [];
         this.currentAnalysis = null;
+        this.initialized = false;
+        this.lastAnalysisTime = 0;
+        this.analysisCooldown = 2000; // 2 segundos entre análises
         
-        this.init();
+        // Não inicializar automaticamente - aguardar authStateChanged
     }
 
     async init() {
+        if (this.initialized) return;
+        
         console.log('🤖 Inicializando AI Analysis Manager...');
-        await this.loadAvailableCurrencies();
-        this.bindEvents();
-        this.updateUI();
+        try {
+            await this.loadAvailableCurrencies();
+            this.bindEvents();
+            this.initialized = true;
+            console.log('✅ AI Analysis Manager inicializado com sucesso');
+        } catch (error) {
+            console.error('❌ Erro ao inicializar AI Analysis Manager:', error);
+        }
     }
 
     async loadAvailableCurrencies() {
@@ -27,7 +37,7 @@ class AIAnalysisManager {
                 const data = await response.json();
                 this.availableCurrencies = data.data.currencies;
                 console.log('✅ Moedas carregadas:', this.availableCurrencies);
-                this.updateCurrencySelector();
+                this.populateCurrencySelector(this.availableCurrencies);
             } else {
                 console.error('❌ Erro ao carregar moedas:', response.status);
             }
@@ -96,11 +106,80 @@ class AIAnalysisManager {
         }
     }
 
+
+    populateCurrencySelector(currencies) {
+        const currencySelector = document.getElementById('currency-selector');
+        if (!currencySelector) return;
+        
+        currencySelector.innerHTML = '';
+        
+        // Agrupar por tipo
+        const groupedCurrencies = currencies.reduce((groups, currency) => {
+            const type = currency.type;
+            if (!groups[type]) {
+                groups[type] = [];
+            }
+            groups[type].push(currency);
+            return groups;
+        }, {});
+        
+        // Criar optgroups para cada tipo
+        Object.keys(groupedCurrencies).forEach(type => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = this.getTypeLabel(type);
+            
+            groupedCurrencies[type].forEach(currency => {
+                const option = document.createElement('option');
+                option.value = currency.symbol;
+                
+                // Criar texto com status visual
+                const statusIcon = currency.isOpen ? '🟢' : '🔴';
+                const marketInfo = currency.alwaysOpen ? '24/7' : currency.market;
+                option.textContent = `${statusIcon} ${currency.symbol} - ${currency.name} (${marketInfo})`;
+                
+                // Adicionar atributos para styling
+                option.dataset.type = currency.type;
+                option.dataset.status = currency.status;
+                option.dataset.alwaysOpen = currency.alwaysOpen;
+                
+                optgroup.appendChild(option);
+            });
+            
+            currencySelector.appendChild(optgroup);
+        });
+        
+        // Selecionar primeira moeda sempre aberta por padrão
+        const firstAlwaysOpen = currencies.find(c => c.alwaysOpen);
+        if (firstAlwaysOpen) {
+            currencySelector.value = firstAlwaysOpen.symbol;
+            this.currentSymbol = firstAlwaysOpen.symbol;
+        }
+    }
+    
+    getTypeLabel(type) {
+        const labels = {
+            'Crypto': '🪙 Criptomoedas (24/7)',
+            'Synthetic': '⚡ Sintéticas (24/7)',
+            'Forex': '💱 Forex (Horário Limitado)',
+            'Commodity': '🥇 Commodities (Horário Limitado)',
+            'Index': '📈 Índices (Horário Limitado)'
+        };
+        return labels[type] || type;
+    }
+
     async performAnalysis() {
         if (this.isAnalyzing) return;
 
+        // Verificar cooldown para evitar rate limiting
+        const now = Date.now();
+        if (now - this.lastAnalysisTime < this.analysisCooldown) {
+            console.log('⏳ Aguardando cooldown antes da próxima análise...');
+            return;
+        }
+
         try {
             this.isAnalyzing = true;
+            this.lastAnalysisTime = now;
             this.updateAnalyzeButton(true);
 
             console.log(`🔍 Analisando ${this.currentSymbol}...`);
@@ -123,9 +202,16 @@ class AIAnalysisManager {
                 this.displayAnalysis(this.currentAnalysis);
                 console.log('✅ Análise concluída:', this.currentAnalysis);
             } else {
-                const errorData = await response.json();
-                console.error('❌ Erro na análise:', errorData);
-                window.authManager.showToast('Erro', errorData.message, 'error');
+                // Verificar se é erro de rate limiting
+                if (response.status === 429) {
+                    console.warn('⚠️ Rate limiting detectado, aumentando cooldown...');
+                    this.analysisCooldown = 5000; // 5 segundos
+                    window.authManager.showToast('Aviso', 'Muitas análises. Aguarde um momento.', 'warning');
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Erro na análise:', response.status, errorText);
+                    window.authManager.showToast('Erro', 'Erro ao realizar análise', 'error');
+                }
             }
         } catch (error) {
             console.error('❌ Erro na análise:', error);
@@ -328,4 +414,12 @@ class AIAnalysisManager {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('📄 DOM loaded, creating AI Analysis Manager');
     window.aiAnalysisManager = new AIAnalysisManager();
+});
+
+// Initialize when auth state changes
+document.addEventListener('authStateChanged', () => {
+    console.log('🔐 Auth state changed, initializing AI Analysis Manager');
+    if (window.aiAnalysisManager && !window.aiAnalysisManager.initialized) {
+        window.aiAnalysisManager.init();
+    }
 });

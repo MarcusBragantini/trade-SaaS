@@ -204,6 +204,12 @@ class AuthManager {
                 body: JSON.stringify({ email, password })
             });
 
+            // Verificar se é rate limiting antes de tentar fazer parse do JSON
+            if (response.status === 429) {
+                this.showToast('Rate Limiting', 'Muitas tentativas de login. Aguarde 15 minutos.', 'warning');
+                return;
+            }
+
             const data = await response.json();
             console.log('Login response:', data);
 
@@ -224,7 +230,13 @@ class AuthManager {
             }
         } catch (error) {
             console.error('Login error:', error);
-            this.showToast('Erro', 'Erro de conexão. Tente novamente.', 'error');
+            
+            // Verificar se é erro de rate limiting
+            if (error.message && error.message.includes('Too many')) {
+                this.showToast('Rate Limiting', 'Muitas tentativas de login. Aguarde 15 minutos.', 'warning');
+            } else {
+                this.showToast('Erro', 'Erro de conexão. Tente novamente.', 'error');
+            }
         }
     }
 

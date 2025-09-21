@@ -6,8 +6,35 @@ class DashboardManager {
     init() {
         console.log('🚀 DashboardManager initialized');
         this.bindEvents();
+        this.loadUserData();
         this.loadDashboardData();
         this.updateMarketTime();
+    }
+
+    async loadUserData() {
+        try {
+            console.log('👤 Carregando dados do usuário...');
+            const response = await fetch(getApiUrl('/api/v1/auth/profile'), {
+                headers: window.authManager.getAuthHeaders()
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const user = data.data.user; // Corrigir o caminho dos dados
+                
+                // Atualizar nome do usuário
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = user.name || 'Usuário';
+                }
+                
+                console.log('✅ Dados do usuário carregados:', user.name);
+            } else {
+                console.error('❌ Erro ao carregar dados do usuário:', response.status);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao carregar dados do usuário:', error);
+        }
     }
 
     bindEvents() {
@@ -172,7 +199,7 @@ async loadDashboardData() {
             fetch(getApiUrl('/api/v1/trading/positions'), {
                 headers: window.authManager.getAuthHeaders()
             }),
-            fetch(getApiUrl('/api/v1/deriv/assets'), {
+            fetch(getApiUrl('/api/v1/ai/currencies'), {
                 headers: window.authManager.getAuthHeaders()
             })
         ]);

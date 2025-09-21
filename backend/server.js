@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { initializeDatabase } = require('./utils/database');
+const { generalLimiter } = require('./middleware/rateLimiting');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const WebSocket = require('ws');
@@ -19,6 +20,7 @@ const subscriptionRoutes = require('./routes/subscription');
 const adminRoutes = require('./routes/admin');
 const derivRoutes = require('./routes/deriv');
 const aiAnalysisRoutes = require('./routes/ai-analysis');
+const autoTradingRoutes = require('./routes/auto-trading');
 
 // Import middleware
 const authMiddleware = require('./middleware/auth');
@@ -46,12 +48,10 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
-app.use(limiter);
+// Aplicar rate limiting geral
+app.use('/api', generalLimiter);
+
+// Rate limiting já aplicado acima com generalLimiter
 
 // Middleware de logging
 app.use((req, res, next) => {
@@ -75,6 +75,7 @@ app.use('/api/v1/subscription', authMiddleware, subscriptionRoutes);
 app.use('/api/v1/admin', authMiddleware, adminRoutes);
 app.use('/api/v1/deriv', authMiddleware, derivRoutes);
 app.use('/api/v1/ai', authMiddleware, aiAnalysisRoutes);
+app.use('/api/v1/auto-trading', authMiddleware, autoTradingRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
