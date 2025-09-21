@@ -4,19 +4,21 @@ const WebSocket = require('ws');
 const User = require('../models/User');
 const router = express.Router();
 
-// Deriv API configuration
-const DERIV_API_URL = process.env.DERIV_API_URL || 'wss://ws.binaryws.com/websockets/v3';
+// Deriv API configuration (usar domínio atual derivws)
+const DERIV_API_URL = process.env.DERIV_API_URL || 'wss://ws.derivws.com/websockets/v3';
 let derivWS = null;
 const connectedUsers = new Map(); // Mapa para armazenar conexões por usuário
 
 // Initialize Deriv WebSocket connection for a specific user
-function initDerivConnection(userId, apiToken) {
+function initDerivConnection(userId, apiToken, appId) {
   if (connectedUsers.has(userId)) {
     console.log(`✅ Usuário ${userId} já está conectado à Deriv`);
     return;
   }
 
-  const userWS = new WebSocket(DERIV_API_URL);
+  const useAppId = appId || process.env.DERIV_APP_ID || '1089'; // fallback DEV
+  const wsUrl = `${DERIV_API_URL}?app_id=${encodeURIComponent(useAppId)}`;
+  const userWS = new WebSocket(wsUrl);
 
   userWS.on('open', () => {
     console.log(`✅ Conectado à API Deriv para usuário ${userId}`);
@@ -60,7 +62,7 @@ function initDerivConnection(userId, apiToken) {
     // Attempt to reconnect after 5 seconds
     setTimeout(() => {
       if (apiToken) {
-        initDerivConnection(userId, apiToken);
+        initDerivConnection(userId, apiToken, appId);
       }
     }, 5000);
   });
@@ -91,7 +93,7 @@ router.get('/assets', async (req, res) => {
     }
 
     // Inicializar conexão para este usuário
-    initDerivConnection(user.id, user.deriv_api_token);
+    initDerivConnection(user.id, user.deriv_api_token, user.deriv_app_id);
 
     // Lista de ativos populares na Deriv
     const assets = [
@@ -165,7 +167,9 @@ router.get('/balance', async (req, res) => {
       });
     }
 
-    const ws = new WebSocket(DERIV_API_URL);
+    const useAppId = user.deriv_app_id || process.env.DERIV_APP_ID || '1089';
+    const wsUrl = `${DERIV_API_URL}?app_id=${encodeURIComponent(useAppId)}`;
+    const ws = new WebSocket(wsUrl);
 
     const send = (obj) => ws.send(JSON.stringify(obj));
 
