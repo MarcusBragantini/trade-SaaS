@@ -1,6 +1,12 @@
 // Configuração da API
+const RESOLVED_BASE = (typeof window !== 'undefined' && window.API_BASE)
+    ? window.API_BASE
+    : (typeof location !== 'undefined' && location.origin && location.origin.startsWith('http'))
+        ? location.origin
+        : 'http://localhost:5000';
+
 const API_CONFIG = {
-    BASE_URL: 'http://localhost:5000',
+    BASE_URL: RESOLVED_BASE.replace(/\/$/, ''),
     ENDPOINTS: {
         AUTH: {
             LOGIN: '/api/v1/auth/login',
@@ -30,5 +36,7 @@ const API_CONFIG = {
 
 // Função para construir URLs completas
 function getApiUrl(endpoint) {
+    if (/^https?:\/\//i.test(endpoint)) return endpoint;
+    if (!API_CONFIG.BASE_URL) return endpoint; // relativo ao mesmo host
     return `${API_CONFIG.BASE_URL}${endpoint}`;
 }
