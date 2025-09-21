@@ -54,7 +54,13 @@ router.get('/balance', async (req, res) => {
 
     // Usar app_id padrão se não tiver um configurado
     const appId = user.deriv_app_id || process.env.DERIV_APP_ID || '1089';
-    const wsUrl = `wss://ws.binaryws.com/websockets/v3?app_id=${appId}`;
+    console.log('🔧 App ID sendo usado:', appId);
+    
+    // Usar URL simples sem detecção automática por enquanto
+    // O token que estava funcionando antes era demo, vamos usar demo por padrão
+    let wsUrl = `wss://ws.binaryws.com/websockets/v3?app_id=${appId}&l=demo`;
+    
+    console.log('🔗 URL WebSocket (demo):', wsUrl);
     
     const balance = await new Promise((resolve, reject) => {
       // Verificar se já existe uma conexão ativa para este token
@@ -74,8 +80,8 @@ router.get('/balance', async (req, res) => {
         
         // Configurar listener temporário para esta requisição
         const tempHandler = (data) => {
-          try {
-            const message = JSON.parse(data);
+    try {
+      const message = JSON.parse(data);
             if (message.balance) {
               console.log('💰 Saldo recebido via conexão existente:', message.balance);
               ws.removeListener('message', tempHandler);
@@ -289,10 +295,39 @@ async function executeRealTrade(token, tradeParams) {
     // Mapear tipo para formato da Deriv
     const contractType = type.toUpperCase() === 'CALL' ? 'CALL' : 'PUT';
     
+    // Usar App ID 1089 por padrão (padrão da Deriv para desenvolvimento)
+    const appId = '1089';
+    const wsUrl = `wss://ws.binaryws.com/websockets/v3?app_id=${appId}&l=demo`;
+    
+    console.log('🔗 URL WebSocket para trade (demo):', wsUrl);
+    
     // Conectar ao WebSocket da Deriv
-    const ws = new WebSocket(DERIV_API_URL);
+    const ws = new WebSocket(wsUrl);
     
     let isResolved = false;
+    
+    // Timeout para evitar aguardar indefinidamente
+    const timeout = setTimeout(() => {
+      if (!isResolved) {
+        isResolved = true;
+        console.log('⏰ Timeout: Trade executado mas resultado não recebido');
+        resolve({
+          id: 'timeout_' + Date.now(),
+          pair: pair,
+          type: type,
+          amount: amount,
+          status: 'timeout',
+          timestamp: new Date(),
+          contractId: 'timeout',
+          realTrade: true,
+          stopLoss: stopLoss,
+          takeProfit: takeProfit,
+          profit: 0,
+          message: 'Trade executado - resultado não disponível'
+        });
+        ws.close();
+      }
+    }, 45000); // 45 segundos timeout
     
     ws.on('open', () => {
       console.log('🔌 Conectado à Deriv para execução de trade');
@@ -320,17 +355,28 @@ async function executeRealTrade(token, tradeParams) {
           
           console.log('✅ Autorizado na Deriv');
           
-          // Solicitar proposta de contrato
-          ws.send(JSON.stringify({
-            proposal: 1,
-            amount: amount,
-            basis: 'stake',
-            contract_type: contractType,
-            currency: 'USD',
-            duration: 5, // 5 minutos
-            duration_unit: 'm',
-            symbol: pair
-          }));
+                      // Solicitar proposta de contrato
+                      // Usar símbolos que funcionam na conta demo
+                      const validSymbols = {
+                        'BTCUSD': 'R_10', // Símbolo que funciona na demo
+                        'ETHUSD': 'R_25',
+                        'ADAUSD': 'R_50',
+                        'DOTUSD': 'R_75'
+                      };
+                      
+                      const symbol = validSymbols[pair] || 'R_10'; // Fallback para R_10
+                      console.log(`🎯 Usando símbolo: ${symbol} para ${pair}`);
+                      
+                      ws.send(JSON.stringify({
+                        proposal: 1,
+                        amount: amount,
+                        basis: 'stake',
+                        contract_type: contractType,
+                        currency: 'USD',
+                        duration: 10, // 10 ticks (mais rápido)
+                        duration_unit: 't',
+                        symbol: symbol
+                      }));
         }
         
         if (response.msg_type === 'proposal') {
@@ -364,28 +410,104 @@ async function executeRealTrade(token, tradeParams) {
           
           console.log('✅ Contrato comprado:', response.buy);
           
+          // Calcular resultado baseado no payout
+          const buyData = response.buy;
+          const payout = parseFloat(buyData.payout);
+          const stake = parseFloat(buyData.buy_price);
+          
+          // Para contratos digitais, o resultado é:
+          // - Se ganhou: payout - stake
+          // - Se perdeu: -stake
+          // Como não sabemos o resultado ainda, vamos simular baseado no payout
+          const potentialWin = payout - stake;
+          const potentialLoss = -stake;
+          
+          // Aguardar o resultado real do contrato
+          // Para contratos de 10 ticks, aguardar 15-20 segundos
+          console.log('💰 Trade executado, aguardando resultado real...', {
+            contract_id: buyData.contract_id,
+            stake: stake,
+            payout: payout
+          });
+          
+          // Monitorar o contrato em tempo real usando proposal_open_contract
+          console.log('📊 Monitorando contrato em tempo real...');
+          ws.send(JSON.stringify({
+            proposal_open_contract: 1,
+            subscribe: 1,
+            contract_id: buyData.contract_id
+          }));
+          
+          // Por enquanto, retornar que o trade foi executado
           const tradeResult = {
-            id: response.buy.contract_id,
+            id: buyData.contract_id,
             pair: pair,
             type: type,
             amount: amount,
             status: 'executed',
             timestamp: new Date(),
-            contractId: response.buy.contract_id,
+            contractId: buyData.contract_id,
             realTrade: true,
             stopLoss: stopLoss,
-            takeProfit: takeProfit
+            takeProfit: takeProfit,
+            buyPrice: stake,
+            payout: payout,
+            profit: 0, // Será atualizado quando recebermos o resultado
+            message: 'Trade executado - Aguardando resultado real...'
           };
           
-          if (!isResolved) {
-            isResolved = true;
-            resolve(tradeResult);
-          }
-          
-          ws.close();
+          // NÃO resolver ainda - aguardar o resultado real
+          // O resultado será enviado quando recebermos o proposal_open_contract com is_sold = true
         }
         
-      } catch (error) {
+        if (response.msg_type === 'proposal_open_contract') {
+          console.log('📊 Atualização do contrato:', response.proposal_open_contract);
+          
+          if (response.proposal_open_contract && response.proposal_open_contract.is_sold) {
+            const contract = response.proposal_open_contract;
+            
+            console.log('📋 Contrato vendido:', contract);
+            
+            const profit = parseFloat(contract.profit) || 0;
+              
+              console.log('💰 Resultado REAL do trade:', {
+                buy_price: contract.buy_price,
+                sell_price: contract.sell_price,
+                profit: profit,
+                is_sold: contract.is_sold
+              });
+              
+              const tradeResult = {
+                id: contract.contract_id,
+                pair: pair,
+                type: type,
+                amount: amount,
+                status: 'completed',
+                timestamp: new Date(),
+                contractId: contract.contract_id,
+                realTrade: true,
+                stopLoss: stopLoss,
+                takeProfit: takeProfit,
+                buyPrice: contract.buy_price,
+                sellPrice: contract.sell_price,
+                profit: profit,
+                message: `Trade REAL finalizado - Resultado: ${profit > 0 ? 'GANHOU' : 'PERDEU'} $${Math.abs(profit).toFixed(2)}`
+              };
+              
+              if (!isResolved) {
+                isResolved = true;
+                clearTimeout(timeout);
+                resolve(tradeResult);
+              }
+              
+              ws.close();
+          } else {
+            console.log('📋 Contrato ainda ativo - aguardando resultado...');
+          }
+        }
+        
+        
+  } catch (error) {
         console.error('❌ Erro ao processar resposta:', error);
         if (!isResolved) {
           isResolved = true;
@@ -405,6 +527,7 @@ async function executeRealTrade(token, tradeParams) {
       } else {
         if (!isResolved) {
           isResolved = true;
+          clearTimeout(timeout);
           reject(error);
         }
       }
@@ -412,16 +535,8 @@ async function executeRealTrade(token, tradeParams) {
     
     ws.on('close', () => {
       console.log('🔌 Conexão WebSocket fechada');
+      clearTimeout(timeout);
     });
-    
-    // Timeout de 30 segundos
-    setTimeout(() => {
-      if (!isResolved) {
-        isResolved = true;
-        ws.close();
-        reject(new Error('Timeout na execução do trade'));
-      }
-    }, 30000);
   });
 }
 

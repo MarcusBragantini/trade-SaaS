@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Token Deriv</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        h1 {
+            color: #3b82f6;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 12px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-weight: 600;
+            display: none;
+        }
+        .status.success {
+            background-color: #065f46;
+            color: #d1fae5;
+            border: 1px solid #10b981;
+        }
+        .status.error {
+            background-color: #7f1d1d;
+            color: #fecaca;
+            border: 1px solid #ef4444;
+        }
+        .status.info {
+            background-color: #1e3a8a;
+            color: #dbeafe;
+            border: 1px solid #3b82f6;
+        }
+        .test-results {
+            margin-top: 20px;
+            text-align: left;
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .log-entry.success { background-color: #065f46; color: #d1fae5; }
+        .log-entry.error { background-color: #7f1d1d; color: #fecaca; }
+        .log-entry.info { background-color: #1e3a8a; color: #dbeafe; }
+        .log-entry.warn { background-color: #78350f; color: #fed7aa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-key"></i> Teste Token Deriv</h1>
+        <div id="status" class="status"></div>
+        
+        <form id="token-form">
+            <div class="form-group">
+                <label for="deriv-token">Token da API Deriv:</label>
+                <input type="text" id="deriv-token" placeholder="Insira seu token da Deriv aqui" value="7yMoFuMjSkkkO64">
+            </div>
+            <button type="button" class="btn-primary" onclick="testBalance()"><i class="fas fa-wallet"></i> Testar Saldo</button>
+            <button type="button" class="btn-secondary" onclick="testTrade()"><i class="fas fa-chart-line"></i> Testar Trade</button>
+        </form>
+
+        <div class="test-results" id="test-results">
+            <h3>Resultados dos Testes:</h3>
+            <div id="logs"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api/v1';
+        
+        function addLog(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const logEntry = document.createElement('div');
+            logEntry.classList.add('log-entry', type);
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(logEntry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            status.className = `status ${type}`;
+            status.textContent = message;
+        }
+
+        async function autoLogin() {
+            try {
+                addLog('🚀 Fazendo auto-login...', 'info');
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'bragantini34@gmail.com',
+                        password: 'Mvb081521'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        const token = data.data?.token;
+                        if (token) {
+                            localStorage.setItem('authToken', token);
+                            localStorage.setItem('user', JSON.stringify(data.data.user));
+                            addLog('✅ Auto-login realizado com sucesso!', 'success');
+                            return token;
+                        }
+                    }
+                }
+                addLog('❌ Auto-login falhou', 'error');
+                return null;
+            } catch (error) {
+                addLog(`❌ Erro no auto-login: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        async function testBalance() {
+            addLog('🧪 Iniciando teste de saldo...', 'info');
+            
+            const derivToken = document.getElementById('deriv-token').value.trim();
+            if (!derivToken) {
+                addLog('❌ Token não fornecido', 'error');
+                return;
+            }
+
+            try {
+                // Auto-login primeiro
+                const authToken = await autoLogin();
+                if (!authToken) {
+                    addLog('❌ Falha na autenticação', 'error');
+                    return;
+                }
+
+                // Configurar token Deriv
+                addLog('🔧 Configurando token Deriv...', 'info');
+                const configResponse = await fetch(`${API_BASE_URL}/auth/deriv-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ token: derivToken })
+                });
+
+                if (configResponse.ok) {
+                    addLog('✅ Token Deriv configurado', 'success');
+                    
+                    // Testar saldo
+                    addLog('💰 Testando busca de saldo...', 'info');
+                    const balanceResponse = await fetch(`${API_BASE_URL}/deriv/balance`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+
+                    if (balanceResponse.ok) {
+                        const balanceData = await balanceResponse.json();
+                        addLog(`✅ Saldo obtido: $${balanceData.data.balance}`, 'success');
+                        showStatus(`Saldo: $${balanceData.data.balance}`, 'success');
+                    } else {
+                        const errorData = await balanceResponse.json();
+                        addLog(`❌ Erro ao buscar saldo: ${errorData.message}`, 'error');
+                        showStatus(`Erro: ${errorData.message}`, 'error');
+                    }
+                } else {
+                    const errorData = await configResponse.json();
+                    addLog(`❌ Erro ao configurar token: ${errorData.message}`, 'error');
+                    showStatus(`Erro: ${errorData.message}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ Erro geral: ${error.message}`, 'error');
+                showStatus(`Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testTrade() {
+            addLog('🧪 Iniciando teste de trade...', 'info');
+            
+            const derivToken = document.getElementById('deriv-token').value.trim();
+            if (!derivToken) {
+                addLog('❌ Token não fornecido', 'error');
+                return;
+            }
+
+            try {
+                // Auto-login primeiro
+                const authToken = await autoLogin();
+                if (!authToken) {
+                    addLog('❌ Falha na autenticação', 'error');
+                    return;
+                }
+
+                // Configurar token Deriv
+                addLog('🔧 Configurando token Deriv...', 'info');
+                const configResponse = await fetch(`${API_BASE_URL}/auth/deriv-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ token: derivToken })
+                });
+
+                if (configResponse.ok) {
+                    addLog('✅ Token Deriv configurado', 'success');
+                    
+                    // Testar trade
+                    addLog('🚀 Testando execução de trade...', 'info');
+                    const tradeResponse = await fetch(`${API_BASE_URL}/trading/execute`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({
+                            pair: 'BTCUSD',
+                            type: 'CALL',
+                            amount: 1, // Valor baixo para teste
+                            stopLoss: 0.5,
+                            takeProfit: 1.5
+                        })
+                    });
+
+                    if (tradeResponse.ok) {
+                        const tradeData = await tradeResponse.json();
+                        addLog(`✅ Trade executado: ${tradeData.message}`, 'success');
+                        if (tradeData.data) {
+                            addLog(`📊 ID: ${tradeData.data.id}, Lucro: $${tradeData.data.profit}`, 'info');
+                        }
+                        showStatus(`Trade: ${tradeData.message}`, 'success');
+                    } else {
+                        const errorData = await tradeResponse.json();
+                        addLog(`❌ Erro ao executar trade: ${errorData.message}`, 'error');
+                        showStatus(`Erro: ${errorData.message}`, 'error');
+                    }
+                } else {
+                    const errorData = await configResponse.json();
+                    addLog(`❌ Erro ao configurar token: ${errorData.message}`, 'error');
+                    showStatus(`Erro: ${errorData.message}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ Erro geral: ${error.message}`, 'error');
+                showStatus(`Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            addLog('🔧 Página de teste carregada', 'info');
+            addLog('💡 Clique em "Testar Saldo" para verificar se o token funciona', 'info');
+        });
+    </script>
+</body>
+</html>
