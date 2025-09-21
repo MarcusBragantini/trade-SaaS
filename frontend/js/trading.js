@@ -93,7 +93,7 @@ class TradingManager {
         const amount = document.getElementById('trade-amount').value;
 
         try {
-            const response = await fetch('/api/v1/trading/execute', {
+            const response = await fetch(getApiUrl('/api/v1/trading/execute'), {
                 method: 'POST',
                 headers: {
                     ...window.authManager.getAuthHeaders(),
@@ -130,7 +130,7 @@ class TradingManager {
 
     async closePosition(positionId) {
         try {
-            const response = await fetch(`/api/v1/trading/positions/${positionId}/close`, {
+            const response = await fetch(getApiUrl(`/api/v1/trading/positions/${positionId}/close`), {
                 method: 'POST',
                 headers: window.authManager.getAuthHeaders()
             });

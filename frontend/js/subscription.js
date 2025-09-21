@@ -32,11 +32,12 @@ class SubscriptionManager {
 
 async loadPlans() {
     try {
-        const response = await fetch(getApiUrl('/api/v1/subscription/plans'), {
-            headers: window.authManager.getAuthHeaders()
-        });
-
-        // ... resto do código ...
+        const response = await fetch(getApiUrl('/api/v1/subscription/plans'));
+        if (response.ok) {
+            const data = await response.json();
+            this.plans = data.data.plans || [];
+            this.renderPlans();
+        }
     } catch (error) {
         console.error('Error loading plans:', error);
     }
@@ -101,8 +102,12 @@ async selectPlan(planId, interval) {
                 interval
             })
         });
-
-        // ... resto do código ...
+        if (response.ok) {
+            const data = await response.json();
+            if (data.data && data.data.url) {
+                window.location.href = data.data.url;
+            }
+        }
     } catch (error) {
         console.error('Error selecting plan:', error);
     }
@@ -157,7 +162,7 @@ async selectPlan(planId, interval) {
 
     async getCurrentSubscription() {
         try {
-            const response = await fetch('/api/v1/subscription/current', {
+            const response = await fetch(getApiUrl('/api/v1/subscription/current'), {
                 headers: window.authManager.getAuthHeaders()
             });
 

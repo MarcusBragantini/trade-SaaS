@@ -32,16 +32,14 @@ app.use(helmet());
 // Stripe webhook must be raw body BEFORE json parser
 app.use('/api/v1/subscription/webhook', express.raw({ type: 'application/json' }));
 
+// CORS aberto para dev (sem cookies)
 app.use(cors({
-  origin: (origin, callback) => {
-    const allowed = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000').split(',');
-    if (!origin || allowed.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(null, true); // flexibiliza em dev
-  },
-  credentials: true
+  origin: true,
+  credentials: false,
+  methods: ['GET','HEAD','PUT','PATCH','POST','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+app.options('*', cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
