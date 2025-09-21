@@ -6,7 +6,7 @@ class DashboardManager {
     init() {
         console.log('DashboardManager initialized');
         this.bindEvents();
-        this.loadDashboardData();
+		this.loadDashboardData();
         this.updateMarketTime();
     }
 
@@ -94,12 +94,12 @@ class DashboardManager {
         }
     }
 
-async loadDashboardData() {
+	async loadDashboardData() {
     try {
         console.log('Token:', window.authManager.token); // Debug
         console.log('Auth headers:', window.authManager.getAuthHeaders()); // Debug
         
-        const response = await fetch(getApiUrl('/api/v1/trading/dashboard'), {
+			const response = await fetch(getApiUrl('/api/v1/trading/dashboard'), {
             headers: window.authManager.getAuthHeaders()
         });
 
@@ -107,7 +107,9 @@ async loadDashboardData() {
         
         if (response.ok) {
             const data = await response.json();
-            this.updateDashboard(data.data);
+				this.updateDashboard(data.data);
+				// Tentar carregar saldo real da Deriv se credenciais existirem
+				this.loadDerivBalance().catch(() => {});
         } else {
             const errorData = await response.json().catch(() => ({}));
             console.error('Error loading dashboard data:', response.status, errorData);
@@ -120,6 +122,44 @@ async loadDashboardData() {
         console.error('Error loading dashboard:', error);
     }
 }
+
+	async loadDerivBalance() {
+		try {
+			const response = await fetch(getApiUrl('/api/v1/deriv/balance'), {
+				headers: window.authManager.getAuthHeaders()
+			});
+			if (!response.ok) {
+				console.warn('Deriv balance not available:', response.status);
+				this.updateDerivStatus(false);
+				return;
+			}
+			const result = await response.json();
+			if (result && result.status === 'success' && result.data) {
+				const balance = Number(result.data.balance || 0);
+				if (!Number.isNaN(balance)) {
+					document.getElementById('balance-value').textContent = `$${balance.toFixed(2)}`;
+				}
+				this.updateDerivStatus(true);
+			}
+		} catch (e) {
+			console.error('Error fetching Deriv balance:', e);
+			this.updateDerivStatus(false);
+		}
+	}
+
+	updateDerivStatus(connected) {
+		const derivStatus = document.getElementById('deriv-status');
+		if (derivStatus) {
+			derivStatus.textContent = connected ? 'Conectado' : 'Desconectado';
+			derivStatus.classList.toggle('connected', !!connected);
+		}
+		const apiStatus = document.getElementById('api-status');
+		if (apiStatus) {
+			apiStatus.innerHTML = connected
+				? '<div class="status-indicator connected"></div><span>API Configurada</span>'
+				: '<div class="status-indicator disconnected"></div><span>API Não Configurada</span>';
+		}
+	}
 
     updateDashboard(data) {
         document.getElementById('balance-value').textContent = `$${data.balance.toFixed(2)}`;
