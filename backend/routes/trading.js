@@ -1,5 +1,6 @@
 const express = require('express');
 const { validateTradeExecution } = require('../middleware/validation');
+const User = require('../models/User');
 const router = express.Router();
 
 // Rota pública de teste

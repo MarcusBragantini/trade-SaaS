@@ -1,0 +1,113 @@
+🔄 Inicializando banco de dados...
+🔄 Inicializando conexão com MySQL...
+📋 Usando configuração:
+   Host: localhost
+   User: root
+   Database: forexai_trading
+   Password: ***
+❌ Erro na conexão MySQL: 
+❌ Erro ao conectar MySQL: 
+⚠️  Falha ao inicializar o banco de dados (continuando sem DB): AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1139:18)
+    at afterConnectMultiple (node:net:1714:7) {
+  code: 'ECONNREFUSED',
+  fatal: true,
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:3306
+        at createConnectionError (node:net:1677:14)
+        at afterConnectMultiple (node:net:1707:16) {
+      errno: -111,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 3306
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:3306
+        at createConnectionError (node:net:1677:14)
+        at afterConnectMultiple (node:net:1707:16) {
+      errno: -111,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 3306
+    }
+  ]
+}
+
+==================================================
+🚀 ForexAI Trading SaaS Backend
+==================================================
+📡 Servidor rodando em: http://localhost:5000
+🌐 Ambiente: development
+📊 Banco de Dados: Indisponível
+📊 WebSocket: Ativado
+🔌 Deriv Integration: Desativado
+💳 Sistema de Pagamento: Desativado
+==================================================
+      
+
+=== NOVA REQUISIÇÃO ===
+2025-09-21T13:23:26.221Z GET /api/test
+Headers: {
+  authorization: undefined,
+  'content-type': undefined,
+  origin: undefined
+}
+Body: {}
+
+=== NOVA REQUISIÇÃO ===
+2025-09-21T13:23:32.035Z POST /api/v1/auth/login
+Headers: {
+  authorization: undefined,
+  'content-type': 'application/json',
+  origin: undefined
+}
+Body: { email: 'bragantini34@gmail.com', password: 'Mvb081521' }
+
+=== NOVA REQUISIÇÃO AUTH ===
+Path: /login
+Method: POST
+Body: { email: 'bragantini34@gmail.com', password: 'Mvb081521' }
+=== TENTATIVA DE LOGIN INICIADA ===
+Email recebido: bragantini34@gmail.com
+Buscando usuário no banco...
+Database query error: Error: Can't add new command when connection is in closed state
+    at Connection._addCommandClosedState (/workspace/backend/node_modules/mysql2/lib/base/connection.js:159:17)
+    at Connection.execute (/workspace/backend/node_modules/mysql2/lib/base/connection.js:689:10)
+    at /workspace/backend/utils/database.js:60:17
+    at new Promise (<anonymous>)
+    at query (/workspace/backend/utils/database.js:57:18)
+    at User.findByEmail (/workspace/backend/models/User.js:20:26)
+    at /workspace/backend/routes/auth.js:96:29
+    at Layer.handle [as handle_request] (/workspace/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspace/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspace/backend/node_modules/express/lib/router/route.js:119:3) {
+  fatal: true
+}
+Error in User.findByEmail: Error: Can't add new command when connection is in closed state
+    at Connection._addCommandClosedState (/workspace/backend/node_modules/mysql2/lib/base/connection.js:159:17)
+    at Connection.execute (/workspace/backend/node_modules/mysql2/lib/base/connection.js:689:10)
+    at /workspace/backend/utils/database.js:60:17
+    at new Promise (<anonymous>)
+    at query (/workspace/backend/utils/database.js:57:18)
+    at User.findByEmail (/workspace/backend/models/User.js:20:26)
+    at /workspace/backend/routes/auth.js:96:29
+    at Layer.handle [as handle_request] (/workspace/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspace/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspace/backend/node_modules/express/lib/router/route.js:119:3) {
+  fatal: true
+}
+=== ERRO CRÍTICO NO LOGIN ===
+Mensagem: Can't add new command when connection is in closed state
+Stack: Error: Can't add new command when connection is in closed state
+    at Connection._addCommandClosedState (/workspace/backend/node_modules/mysql2/lib/base/connection.js:159:17)
+    at Connection.execute (/workspace/backend/node_modules/mysql2/lib/base/connection.js:689:10)
+    at /workspace/backend/utils/database.js:60:17
+    at new Promise (<anonymous>)
+    at query (/workspace/backend/utils/database.js:57:18)
+    at User.findByEmail (/workspace/backend/models/User.js:20:26)
+    at /workspace/backend/routes/auth.js:96:29
+    at Layer.handle [as handle_request] (/workspace/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspace/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspace/backend/node_modules/express/lib/router/route.js:119:3)
+Tipo: Error

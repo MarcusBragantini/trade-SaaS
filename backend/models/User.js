@@ -2,18 +2,15 @@ const { query, execute } = require('../utils/database');
 const bcrypt = require('bcryptjs');
 
 class User {
-  // Find user by email - com logging
-  static async findByEmail(email) {
-    try {
-      console.log('Buscando usuário por email:', email);
-      const sql = 'SELECT * FROM users WHERE email = ?';
-      const rows = await query(sql, [email]);
-      console.log('Resultado da busca:', rows.length > 0 ? 'Encontrado' : 'Não encontrado');
-      return rows[0] || null;
-    } catch (error) {
-      console.error('Erro em findByEmail:', error.message);
-      throw error;
+  constructor(row) {
+    Object.assign(this, row || {});
+    if (this.password && !this.password_hash) {
+      this.password_hash = this.password;
     }
+  }
+
+  static fromRow(row) {
+    return row ? new User(row) : null;
   }
 
   // Find user by email
@@ -21,7 +18,7 @@ class User {
     try {
       const sql = 'SELECT * FROM users WHERE email = ?';
       const rows = await query(sql, [email]);
-      return rows[0] || null;
+      return User.fromRow(rows[0] || null);
     } catch (error) {
       console.error('Error in User.findByEmail:', error);
       throw error;
@@ -33,9 +30,22 @@ class User {
     try {
       const sql = 'SELECT * FROM users WHERE id = ?';
       const rows = await query(sql, [id]);
-      return rows[0] || null;
+      return User.fromRow(rows[0] || null);
     } catch (error) {
       console.error('Error in User.findById:', error);
+      throw error;
+    }
+  }
+
+  // Create user and return inserted id
+  static async create({ name, email, password, role = 'user', is_active = true }) {
+    try {
+      const passwordHash = await bcrypt.hash(password, 12);
+      const sql = `INSERT INTO users (name, email, password, role, is_active) VALUES (?, ?, ?, ?, ?)`;
+      const result = await execute(sql, [name, email, passwordHash, role, is_active]);
+      return result.insertId;
+    } catch (error) {
+      console.error('Error in User.create:', error);
       throw error;
     }
   }
@@ -64,7 +74,8 @@ class User {
   // Compare password
   async comparePassword(candidatePassword) {
     try {
-      return await bcrypt.compare(candidatePassword, this.password);
+      const hash = this.password_hash || this.password;
+      return await bcrypt.compare(candidatePassword, hash);
     } catch (error) {
       console.error('Error in comparePassword:', error);
       throw error;

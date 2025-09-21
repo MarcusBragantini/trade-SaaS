@@ -29,7 +29,24 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS.split(','),
+  origin: (origin, callback) => {
+    try {
+      const allowed = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000')
+        .split(',')
+        .map(o => o.trim());
+      // Allow non-browser clients (no Origin header) and allowed origins
+      if (!origin || allowed.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    } catch (e) {
+      // Fallback: allow localhost:3000
+      if (!origin || origin.startsWith('http://localhost:3000') || origin.startsWith('http://127.0.0.1:3000')) {
+        return callback(null, true);
+      }
+      return callback(new Error('CORS configuration error'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -166,11 +183,13 @@ function handleAuth(ws, data) {
 
 // Start server
 async function startServer() {
+  let databaseReady = false;
   try {
     console.log('🔄 Inicializando banco de dados...');
     await initializeDatabase();
+    databaseReady = true;
     console.log('✅ Banco de dados inicializado');
-    
+
     const server = app.listen(PORT, () => {
       console.log(`
 ==================================================
@@ -178,7 +197,7 @@ async function startServer() {
 ==================================================
 📡 Servidor rodando em: http://localhost:${PORT}
 🌐 Ambiente: ${process.env.NODE_ENV}
-📊 Banco de Dados: MySQL
+📊 Banco de Dados: ${databaseReady ? 'Conectado' : 'Indisponível'}
 📊 WebSocket: Ativado
 🔌 Deriv Integration: ${process.env.DERIV_APP_ID ? 'Ativado' : 'Desativado'}
 💳 Sistema de Pagamento: ${process.env.STRIPE_SECRET_KEY ? 'Ativado' : 'Desativado'}
@@ -194,8 +213,28 @@ async function startServer() {
     });
 
   } catch (error) {
-    console.error('❌ Falha ao iniciar o servidor:', error);
-    process.exit(1);
+    console.error('⚠️  Falha ao inicializar o banco de dados (continuando sem DB):', error.message || error);
+
+    const server = app.listen(PORT, () => {
+      console.log(`
+==================================================
+🚀 ForexAI Trading SaaS Backend
+==================================================
+📡 Servidor rodando em: http://localhost:${PORT}
+🌐 Ambiente: ${process.env.NODE_ENV}
+📊 Banco de Dados: Indisponível
+📊 WebSocket: Ativado
+🔌 Deriv Integration: ${process.env.DERIV_APP_ID ? 'Ativado' : 'Desativado'}
+💳 Sistema de Pagamento: ${process.env.STRIPE_SECRET_KEY ? 'Ativado' : 'Desativado'}
+==================================================
+      `);
+    });
+
+    server.on('upgrade', (request, socket, head) => {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    });
   }
 }
 
