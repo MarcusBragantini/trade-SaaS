@@ -195,6 +195,8 @@ class DashboardManager {
         const modal = document.getElementById('api-modal');
         if (modal) {
             modal.style.display = 'block';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
             modal.classList.add('show');
         }
     }
