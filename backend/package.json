@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "test": "jest",
     "setup": "node check-setup.js",
-    "init-db": "node scripts/init-database.js"
+    "init-db": "node scripts/init-database.js",
+    "dev-setup": "node scripts/dev-setup.js"
   },
   "keywords": [
     "forex",
