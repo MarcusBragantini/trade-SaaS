@@ -106,8 +106,15 @@ router.post('/login', async (req, res) => {
     }
 
     console.log('Comparando senhas...');
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    console.log('Senha válida:', isPasswordValid);
+    const storedHash = user.password || user.password_hash;
+    if (!storedHash) {
+      console.error('Senha hash ausente nas colunas password/password_hash para o usuário:', email);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Configuração de credenciais indisponível. Contate o suporte.'
+      });
+    }
+    const isPasswordValid = await bcrypt.compare(password, storedHash);
 
     if (!isPasswordValid) {
       console.log('Senha incorreta');
