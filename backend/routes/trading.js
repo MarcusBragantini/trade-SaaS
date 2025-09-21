@@ -1,5 +1,8 @@
 const express = require('express');
 const { validateTradeExecution } = require('../middleware/validation');
+const authMiddleware = require('../middleware/auth');
+const subscriptionMiddleware = require('../middleware/subscription');
+const User = require('../models/User');
 const router = express.Router();
 
 // Rota pública de teste
@@ -11,9 +14,8 @@ router.get('/test', (req, res) => {
     });
 });
 
-// Get trading dashboard (PROTEGIDA)
-// Backend - routes/trading.js (Atualize a rota dashboard)
-router.get('/dashboard', async (req, res) => {
+// Get trading dashboard (protegida por auth, sem exigir assinatura ativa)
+router.get('/dashboard', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
     
@@ -37,8 +39,8 @@ router.get('/dashboard', async (req, res) => {
   }
 });
 
-// Execute trade
-router.post('/execute', validateTradeExecution, async (req, res) => {
+// Execute trade (protegida por auth)
+router.post('/execute', authMiddleware, subscriptionMiddleware, validateTradeExecution, async (req, res) => {
   try {
     const { pair, type, amount, stopLoss, takeProfit } = req.body;
 
@@ -67,8 +69,8 @@ router.post('/execute', validateTradeExecution, async (req, res) => {
   }
 });
 
-// Get open positions
-router.get('/positions', async (req, res) => {
+// Get open positions (protegida por auth)
+router.get('/positions', authMiddleware, async (req, res) => {
   try {
     // Simulação de posições abertas
     const positions = [
@@ -107,8 +109,8 @@ router.get('/positions', async (req, res) => {
   }
 });
 
-// Close position
-router.post('/positions/:id/close', async (req, res) => {
+// Close position (protegida por auth)
+router.post('/positions/:id/close', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -133,8 +135,8 @@ router.post('/positions/:id/close', async (req, res) => {
   }
 });
 
-// Get trading history
-router.get('/history', async (req, res) => {
+// Get trading history (protegida por auth)
+router.get('/history', authMiddleware, async (req, res) => {
   try {
     // Simulação de histórico de trades
     const history = [

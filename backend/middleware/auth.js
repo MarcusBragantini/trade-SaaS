@@ -17,7 +17,7 @@ const authMiddleware = async (req, res, next) => {
       token = token.slice(7, token.length).trimLeft();
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_123');
     const user = await User.findById(decoded.userId);
     
     if (!user) {

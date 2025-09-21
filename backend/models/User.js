@@ -2,45 +2,48 @@ const { query, execute } = require('../utils/database');
 const bcrypt = require('bcryptjs');
 
 class User {
-  // Find user by email - com logging
-  static async findByEmail(email) {
-    try {
-      console.log('Buscando usuário por email:', email);
-      const sql = 'SELECT * FROM users WHERE email = ?';
-      const rows = await query(sql, [email]);
-      console.log('Resultado da busca:', rows.length > 0 ? 'Encontrado' : 'Não encontrado');
-      return rows[0] || null;
-    } catch (error) {
-      console.error('Erro em findByEmail:', error.message);
-      throw error;
-    }
+  constructor(row) {
+    Object.assign(this, row);
   }
 
-  // Find user by email
+  static fromRow(row) {
+    return row ? new User(row) : null;
+  }
+
   static async findByEmail(email) {
     try {
       const sql = 'SELECT * FROM users WHERE email = ?';
       const rows = await query(sql, [email]);
-      return rows[0] || null;
+      return User.fromRow(rows[0] || null);
     } catch (error) {
       console.error('Error in User.findByEmail:', error);
       throw error;
     }
   }
 
-  // Find user by ID
   static async findById(id) {
     try {
       const sql = 'SELECT * FROM users WHERE id = ?';
       const rows = await query(sql, [id]);
-      return rows[0] || null;
+      return User.fromRow(rows[0] || null);
     } catch (error) {
       console.error('Error in User.findById:', error);
       throw error;
     }
   }
 
-  // Update user
+  static async create({ name, email, password }) {
+    try {
+      const hashedPassword = await bcrypt.hash(password, 12);
+      const sql = 'INSERT INTO users (name, email, password, is_active) VALUES (?, ?, ?, ?)';
+      const result = await execute(sql, [name, email, hashedPassword, true]);
+      return result.insertId;
+    } catch (error) {
+      console.error('Error in User.create:', error);
+      throw error;
+    }
+  }
+
   static async update(id, updates) {
     try {
       const fields = [];
@@ -50,6 +53,8 @@ class User {
         fields.push(`${key} = ?`);
         values.push(updates[key]);
       });
+
+      if (fields.length === 0) return;
 
       values.push(id);
 
@@ -61,7 +66,6 @@ class User {
     }
   }
 
-  // Compare password
   async comparePassword(candidatePassword) {
     try {
       return await bcrypt.compare(candidatePassword, this.password);
@@ -71,18 +75,15 @@ class User {
     }
   }
 
-  // Check if subscription is active
   hasActiveSubscription() {
     if (!this.current_period_end) return false;
     return this.subscription_status === 'active' && new Date(this.current_period_end) > new Date();
   }
 
-  // Check if user can trade
   canTrade() {
-    return this.is_active && this.hasActiveSubscription() && this.deriv_api_token;
+    return !!(this.is_active && this.hasActiveSubscription() && this.deriv_api_token);
   }
 
-  // Format user for response
   toJSON() {
     return {
       id: this.id,

@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const authMiddleware = require('../middleware/auth');
 const { 
   validateRegistration, 
   validateLogin, 
@@ -105,7 +106,7 @@ router.post('/login', async (req, res) => {
     }
 
     console.log('Comparando senhas...');
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     console.log('Senha válida:', isPasswordValid);
 
     if (!isPasswordValid) {
@@ -173,7 +174,7 @@ router.post('/deriv-test', async (req, res) => {
   }
 });
 // Get current user profile
-router.get('/profile', async (req, res) => {
+router.get('/profile', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
     
@@ -200,7 +201,7 @@ router.get('/profile', async (req, res) => {
 });
 
 // Update user profile
-router.put('/profile', validateUpdateProfile, async (req, res) => {
+router.put('/profile', authMiddleware, validateUpdateProfile, async (req, res) => {
   try {
     const { name, tradingSettings } = req.body;
     const user = await User.findById(req.userId);
@@ -243,7 +244,7 @@ router.put('/profile', validateUpdateProfile, async (req, res) => {
 });
 
 // Update Deriv API credentials
-router.post('/deriv-credentials', validateDerivCredentials, async (req, res) => {
+router.post('/deriv-credentials', authMiddleware, validateDerivCredentials, async (req, res) => {
   try {
     const { apiToken, appId } = req.body;
     const user = await User.findById(req.userId);
