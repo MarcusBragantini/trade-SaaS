@@ -1154,3 +1154,7 @@ input:checked + .slider:before {
 .loading-screen {
     display: flex; /* Garantir que loading screen aparece */
 }
+
+/* Forçar comportamento consistente do modal */
+.modal { display: none; }
+.modal.show { display: block !important; visibility: visible !important; opacity: 1 !important; }
