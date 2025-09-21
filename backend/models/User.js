@@ -109,6 +109,27 @@ class User {
       canTrade: this.canTrade()
     };
   }
+
+  // Método estático para atualizar usuário por ID
+  static async updateById(userId, updates) {
+    const db = require('../utils/database');
+    
+    try {
+      const updateFields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
+      const values = Object.values(updates);
+      values.push(userId);
+      
+      const result = await db.execute(
+        `UPDATE users SET ${updateFields} WHERE id = ?`,
+        values
+      );
+      
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = User;

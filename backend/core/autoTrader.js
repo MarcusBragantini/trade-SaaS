@@ -125,6 +125,11 @@ class AutoTrader {
 
     // Processar tick de preço
     handleTick(tick) {
+        if (!tick || !tick.quote) {
+            console.log('⚠️ Tick inválido recebido:', tick);
+            return;
+        }
+        
         const price = parseFloat(tick.quote);
         this.lastPrice = price;
         

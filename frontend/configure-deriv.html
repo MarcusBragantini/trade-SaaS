@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Token Deriv - ForexAI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 28px;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 10px 0 0 0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .instructions ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            color: #6c757d;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-key"></i> Configurar Token Deriv</h1>
+            <p>Configure seu token da Deriv para executar trades reais</p>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Como obter o token:</h3>
+            <ol>
+                <li>Acesse sua conta na <a href="https://deriv.com" target="_blank">Deriv.com</a></li>
+                <li>Vá em "API" ou "Desenvolvedor"</li>
+                <li>Gere um novo token de API</li>
+                <li>Cole o token abaixo</li>
+            </ol>
+        </div>
+        
+        <form id="token-form">
+            <div class="form-group">
+                <label for="deriv-token">Token da Deriv:</label>
+                <input type="text" id="deriv-token" placeholder="Cole seu token aqui..." required>
+            </div>
+            
+            <button type="submit" class="btn" id="save-btn">
+                <i class="fas fa-save"></i> Salvar Token
+            </button>
+        </form>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div class="back-link">
+            <a href="index-simple.html"><i class="fas fa-arrow-left"></i> Voltar ao Sistema</a>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api/v1';
+        
+        // Verificar se está logado
+        const token = localStorage.getItem('authToken');
+        console.log('🔑 Token encontrado:', token ? 'Sim' : 'Não');
+        
+        if (!token) {
+            document.getElementById('status').style.display = 'block';
+            document.getElementById('status').className = 'status info';
+            document.getElementById('status').innerHTML = '⚠️ Você precisa estar logado para configurar o token. <br><button onclick="autoLogin()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">Fazer Auto-Login</button>';
+            document.getElementById('token-form').style.display = 'none';
+        } else {
+            console.log('✅ Usuário logado, formulário disponível');
+        }
+        
+        // Função para auto-login
+        async function autoLogin() {
+            try {
+                console.log('🚀 Iniciando auto-login...');
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'bragantini34@gmail.com',
+                        password: 'Mvb081521'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        const token = data.data?.token;
+                        const user = data.data?.user;
+                        
+                        if (token) {
+                            localStorage.setItem('authToken', token);
+                            localStorage.setItem('user', JSON.stringify(user));
+                            console.log('✅ Auto-login realizado com sucesso!');
+                            
+                            // Recarregar a página
+                            window.location.reload();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Erro no auto-login:', error);
+                document.getElementById('status').innerHTML = '❌ Erro no auto-login. Tente novamente.';
+            }
+        }
+        
+        document.getElementById('token-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const derivToken = document.getElementById('deriv-token').value.trim();
+            const saveBtn = document.getElementById('save-btn');
+            const status = document.getElementById('status');
+            
+            if (!derivToken) {
+                showStatus('Por favor, insira um token válido.', 'error');
+                return;
+            }
+            
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/deriv-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token: derivToken })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    showStatus('✅ Token configurado com sucesso! Agora você pode executar trades reais.', 'success');
+                    document.getElementById('deriv-token').value = '';
+                } else {
+                    showStatus(`❌ Erro: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Erro de conexão: ${error.message}`, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Token';
+            }
+        });
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            status.className = `status ${type}`;
+            status.innerHTML = message;
+        }
+    </script>
+</body>
+</html>

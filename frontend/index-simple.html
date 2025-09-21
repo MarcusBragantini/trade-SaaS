@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForexAI Trading - Sistema Simplificado</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>ForexAI Trading</h2>
+            <p>Carregando sistema...</p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" style="display: none;">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>ForexAI Trading</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="market-status">
+                    <span class="status-indicator live"></span>
+                    <span>Mercado Aberto</span>
+                    <span class="market-time" id="market-time">09:30:15</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-name" id="user-name">Carregando...</span>
+                        <span class="user-plan" id="user-plan">Free</span>
+                    </div>
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" data-section="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" data-section="trading">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Trading</span>
+                    </a>
+                    <a href="#" class="nav-item" data-section="robot">
+                        <i class="fas fa-robot"></i>
+                        <span>Robô</span>
+                    </a>
+                    <a href="#" class="nav-item" data-section="logs">
+                        <i class="fas fa-list-alt"></i>
+                        <span>Logs</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="content-section active">
+                    <div class="section-header">
+                        <h1>Dashboard</h1>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" id="refresh-dashboard-btn">
+                                <i class="fas fa-sync-alt"></i> Atualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-simple">
+                        <!-- User Info Card -->
+                        <div class="dashboard-card user-info">
+                            <div class="card-header">
+                                <h3>Usuário Logado</h3>
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="user-details">
+                                    <div class="user-name" id="user-name-display">Carregando...</div>
+                                    <div class="user-email" id="user-email-display">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subscription Card -->
+                        <div class="dashboard-card subscription-info">
+                            <div class="card-header">
+                                <h3>Assinatura</h3>
+                                <i class="fas fa-crown"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="subscription-details">
+                                    <div class="subscription-plan" id="subscription-plan">Plano Básico</div>
+                                    <div class="subscription-status" id="subscription-status">
+                                        <span class="status-indicator active"></span>
+                                        <span class="status-text">Ativa</span>
+                                    </div>
+                                    <div class="subscription-validity" id="subscription-validity">Válida até: -</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Balance Card -->
+                        <div class="dashboard-card balance-info">
+                            <div class="card-header">
+                                <h3>Saldo Atual</h3>
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="balance-amount" id="current-balance">$0.00</div>
+                                <div class="balance-currency">USD</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Trading Section -->
+                <section id="trading-section" class="content-section">
+                    <div class="section-header">
+                        <h1>Trading</h1>
+                    </div>
+
+                    <div class="trading-layout">
+                        <!-- Chart Panel -->
+                        <div class="chart-panel">
+                            <div class="chart-controls">
+                                <div class="timeframe-selector">
+                                    <label for="timeframe-select">Timeframe:</label>
+                                    <select id="timeframe-select" class="form-control">
+                                        <option value="1m">1 Minuto</option>
+                                        <option value="5m">5 Minutos</option>
+                                        <option value="15m">15 Minutos</option>
+                                        <option value="1h">1 Hora</option>
+                                        <option value="4h">4 Horas</option>
+                                        <option value="1d">1 Dia</option>
+                                    </select>
+                                </div>
+                                <div class="symbol-selector">
+                                    <label for="symbol-select">Símbolo:</label>
+                                    <select id="symbol-select" class="form-control">
+                                        <option value="BTCUSD">BTCUSD</option>
+                                        <option value="ETHUSD">ETHUSD</option>
+                                        <option value="ADAUSD">ADAUSD</option>
+                                        <option value="DOTUSD">DOTUSD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="trading-chart" width="800" height="400"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Trade Configuration Panel -->
+                        <div class="trade-config-panel">
+                            <h3>Configuração de Trade</h3>
+                            
+                            <div class="config-grid">
+                                <div class="form-group">
+                                    <label for="entry-amount">Valor de Entrada ($)</label>
+                                    <input type="number" id="entry-amount" class="form-control" value="10" min="1" max="1000">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="stop-loss">Stop Loss ($)</label>
+                                    <input type="number" id="stop-loss" class="form-control" value="5" min="1" max="100">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="stop-win">Stop Win ($)</label>
+                                    <input type="number" id="stop-win" class="form-control" value="10" min="1" max="100">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="martingale">Martingale</label>
+                                    <select id="martingale" class="form-control">
+                                        <option value="off">Desligado</option>
+                                        <option value="2x">2x</option>
+                                        <option value="3x">3x</option>
+                                        <option value="5x">5x</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="max-martingale">Máx. Martingale</label>
+                                    <input type="number" id="max-martingale" class="form-control" value="3" min="1" max="10">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="trade-direction">Direção</label>
+                                    <div class="direction-buttons">
+                                        <button class="btn btn-success direction-btn" data-direction="call">
+                                            <i class="fas fa-arrow-up"></i> COMPRA
+                                        </button>
+                                        <button class="btn btn-danger direction-btn" data-direction="put">
+                                            <i class="fas fa-arrow-down"></i> VENDA
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="trade-actions">
+                                <button class="btn btn-primary btn-lg" id="execute-trade-btn">
+                                    <i class="fas fa-play"></i> Executar Trade
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Robot Section -->
+                <section id="robot-section" class="content-section">
+                    <div class="section-header">
+                        <h1>Robô de Trading</h1>
+                        <div class="header-actions">
+                            <button class="btn btn-success" id="start-robot-btn">
+                                <i class="fas fa-play"></i> Iniciar Robô
+                            </button>
+                            <button class="btn btn-danger" id="stop-robot-btn" disabled>
+                                <i class="fas fa-stop"></i> Parar Robô
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="robot-status">
+                        <div class="status-card">
+                            <div class="status-header">
+                                <h3>Status do Robô</h3>
+                                <span class="status-indicator" id="robot-status-indicator">offline</span>
+                            </div>
+                            <div class="status-content">
+                                <div class="status-item">
+                                    <span class="label">Status:</span>
+                                    <span class="value" id="robot-status">Parado</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="label">Trades Hoje:</span>
+                                    <span class="value" id="robot-trades-today">0</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="label">Win Rate:</span>
+                                    <span class="value" id="robot-win-rate">0%</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="label">Lucro/Perda:</span>
+                                    <span class="value" id="robot-pnl">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Logs Section -->
+                <section id="logs-section" class="content-section">
+                    <div class="section-header">
+                        <h1>Logs do Sistema</h1>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="clear-logs-btn">
+                                <i class="fas fa-trash"></i> Limpar Logs
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="logs-container">
+                        <div class="logs-content" id="system-logs">
+                            <div class="log-entry">
+                                <span class="log-time">[00:00:00]</span>
+                                <span class="log-level info">[INFO]</span>
+                                <span class="log-message">Sistema iniciado. Aguardando configuração...</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard-simple.js"></script>
+    <script src="js/trading-simple.js"></script>
+    <script src="js/robot.js"></script>
+    <script src="js/logs.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

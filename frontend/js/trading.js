@@ -119,8 +119,13 @@ class TradingManager {
         });
 
         // Trade execution buttons
-        document.querySelectorAll('.btn-direction').forEach(btn => {
+        const directionButtons = document.querySelectorAll('.btn-direction');
+        console.log('🔍 Botões de direção encontrados:', directionButtons.length);
+        
+        directionButtons.forEach(btn => {
+            console.log('🔍 Configurando botão:', btn.dataset.direction);
             btn.addEventListener('click', (e) => {
+                console.log('🎯 Botão de direção clicado:', e.target.dataset.direction);
                 this.prepareTrade(e.target.dataset.direction);
             });
         });
@@ -425,7 +430,26 @@ class TradingManager {
 
     async executeTrade() {
         const tradeButton = document.getElementById('execute-trade');
-        const direction = tradeButton.dataset.direction;
+        let direction = tradeButton.dataset.direction;
+        
+        // Se não há direção definida, tentar obter dos botões de direção
+        if (!direction) {
+            const callButton = document.querySelector('.btn-direction[data-direction="call"]');
+            const putButton = document.querySelector('.btn-direction[data-direction="put"]');
+            
+            if (callButton && callButton.classList.contains('active')) {
+                direction = 'call';
+            } else if (putButton && putButton.classList.contains('active')) {
+                direction = 'put';
+            } else {
+                // Fallback: verificar se algum botão tem a classe 'active'
+                const activeButton = document.querySelector('.btn-direction.active');
+                if (activeButton) {
+                    direction = activeButton.dataset.direction;
+                }
+            }
+        }
+        
         const asset = document.getElementById('trade-asset').value;
         const amount = document.getElementById('trade-amount').value;
         const stopLoss = document.getElementById('stop-loss').value;
@@ -434,6 +458,9 @@ class TradingManager {
         const aiDecisionToggle = document.getElementById('ai-decision-toggle');
         const emergencyStopToggle = document.getElementById('emergency-stop-toggle');
 
+        // Debug log
+        console.log('🔍 Debug executeTrade:', { direction, asset, amount });
+
         // Validações básicas
         if (!asset) {
             window.authManager.showToast('Erro', 'Selecione um ativo para operar', 'error');
@@ -441,6 +468,12 @@ class TradingManager {
         }
 
         if (!direction) {
+            console.error('❌ Direção não definida. Botões disponíveis:', {
+                callButton: document.querySelector('.btn-direction[data-direction="call"]'),
+                putButton: document.querySelector('.btn-direction[data-direction="put"]'),
+                callActive: document.querySelector('.btn-direction[data-direction="call"]')?.classList.contains('active'),
+                putActive: document.querySelector('.btn-direction[data-direction="put"]')?.classList.contains('active')
+            });
             window.authManager.showToast('Erro', 'Selecione uma direção (COMPRA ou VENDA)', 'error');
             return;
         }
@@ -466,6 +499,13 @@ class TradingManager {
 
         try {
             console.log('🚀 Executando trade:', { asset, direction, amount });
+            
+            // Validar direção antes de enviar
+            if (!direction || (direction !== 'call' && direction !== 'put')) {
+                console.error('❌ Direção inválida:', direction);
+                window.authManager.showToast('Erro', 'Direção inválida. Selecione COMPRA ou VENDA.', 'error');
+                return;
+            }
             
             const response = await fetch(getApiUrl('/api/v1/trading/execute'), {
                 method: 'POST',

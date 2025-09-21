@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Sistema Simplificado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        #console-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Teste do Sistema Simplificado</h1>
+        
+        <div class="test-item info">
+            <h3>📋 Status do Sistema</h3>
+            <p><strong>Auto-login:</strong> <span id="auto-login-status">Testando...</span></p>
+            <p><strong>Token:</strong> <span id="token-status">Verificando...</span></p>
+            <p><strong>Autenticação:</strong> <span id="auth-status">Verificando...</span></p>
+        </div>
+
+        <div class="test-item">
+            <h3>🔧 Testes</h3>
+            <button onclick="testAutoLogin()">Testar Auto-Login</button>
+            <button onclick="testAuthStatus()">Testar Status de Auth</button>
+            <button onclick="testDashboard()">Testar Dashboard</button>
+            <button onclick="clearConsole()">Limpar Console</button>
+        </div>
+
+        <div class="test-item">
+            <h3>📊 Console Output</h3>
+            <div id="console-output"></div>
+        </div>
+    </div>
+
+    <script>
+        // Capturar console.log
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addToConsole(message, type = 'log') {
+            const output = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.innerHTML = `<span style="color: #666;">[${timestamp}]</span> <span style="color: ${type === 'error' ? 'red' : type === 'warn' ? 'orange' : 'blue'};">[${type.toUpperCase()}]</span> ${message}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToConsole(args.join(' '), 'warn');
+        };
+
+        function updateStatus() {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('user');
+            
+            document.getElementById('token-status').textContent = token ? '✅ Presente' : '❌ Ausente';
+            document.getElementById('auth-status').textContent = token && user ? '✅ Autenticado' : '❌ Não autenticado';
+        }
+
+        async function testAutoLogin() {
+            console.log('🧪 Testando auto-login...');
+            try {
+                const response = await fetch('http://localhost:5001/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'bragantini34@gmail.com',
+                        password: 'Mvb081521'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        // O token está em data.data.token, não em data.token
+                        const token = data.data?.token;
+                        const user = data.data?.user;
+                        
+                        if (token) {
+                            localStorage.setItem('authToken', token);
+                            localStorage.setItem('user', JSON.stringify(user));
+                            document.getElementById('auto-login-status').textContent = '✅ Sucesso';
+                            console.log('✅ Auto-login realizado com sucesso!');
+                            console.log('🔑 Token salvo:', token.substring(0, 20) + '...');
+                            updateStatus();
+                        } else {
+                            console.error('❌ Token não encontrado na resposta:', data);
+                            document.getElementById('auto-login-status').textContent = '❌ Token não encontrado';
+                        }
+                    } else {
+                        document.getElementById('auto-login-status').textContent = '❌ Falhou';
+                        console.error('❌ Auto-login falhou:', data.message);
+                    }
+                } else {
+                    document.getElementById('auto-login-status').textContent = '❌ Erro HTTP';
+                    console.error('❌ Erro HTTP:', response.status);
+                }
+            } catch (error) {
+                document.getElementById('auto-login-status').textContent = '❌ Erro de conexão';
+                console.error('❌ Erro de conexão:', error.message);
+            }
+        }
+
+        async function testAuthStatus() {
+            console.log('🧪 Testando status de autenticação...');
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                console.error('❌ Nenhum token encontrado');
+                return;
+            }
+
+            console.log('🔑 Token encontrado:', token.substring(0, 20) + '...');
+
+            try {
+                const response = await fetch('http://localhost:5001/api/v1/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Perfil carregado:', data);
+                } else {
+                    console.error('❌ Erro ao carregar perfil:', response.status);
+                    const errorText = await response.text();
+                    console.error('❌ Detalhes do erro:', errorText);
+                }
+            } catch (error) {
+                console.error('❌ Erro de conexão:', error.message);
+            }
+        }
+
+        async function testDashboard() {
+            console.log('🧪 Testando dashboard...');
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                console.error('❌ Nenhum token encontrado');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5001/api/v1/trading/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Dashboard carregado:', data);
+                } else {
+                    console.error('❌ Erro ao carregar dashboard:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Erro de conexão:', error.message);
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        // Atualizar status inicial
+        updateStatus();
+        
+        // Testar auto-login automaticamente
+        setTimeout(() => {
+            testAutoLogin();
+        }, 1000);
+    </script>
+</body>
+</html>

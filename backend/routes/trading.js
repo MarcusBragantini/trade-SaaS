@@ -76,36 +76,43 @@ router.post('/execute', tradingLimiter, authMiddleware, tradingMiddleware, valid
     const user = await User.findById(req.userId);
     const { pair, type, amount, stopLoss, takeProfit } = req.body;
 
-    // Se o usuário tem token da Deriv, executar trade real
-    if (user && user.deriv_api_token) {
-      try {
-        console.log('🚀 Executando trade real na Deriv...');
-        
-        // Fazer requisição para a rota de execução da Deriv
-        const tradeResponse = await fetch(`${req.protocol}://${req.get('host')}/api/v1/deriv/execute-trade`, {
-          method: 'POST',
-          headers: {
-            'Authorization': req.headers.authorization,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ pair, type, amount, stopLoss, takeProfit })
-        });
-        
-        if (tradeResponse.ok) {
-          const tradeData = await tradeResponse.json();
-          console.log('✅ Trade executado na Deriv:', tradeData);
-          return res.json(tradeData);
-        } else {
-          console.log('⚠️ Erro na Deriv, usando simulação local');
-        }
-      } catch (derivError) {
-        console.log('⚠️ Erro ao executar na Deriv, usando simulação local:', derivError.message);
-      }
-    } else {
-      console.log('📊 Executando trade simulado - token Deriv não configurado');
-    }
+                // Se o usuário tem token da Deriv, executar trade real
+                if (user && user.deriv_api_token) {
+                  try {
+                    console.log('🚀 Executando trade real na Deriv...');
+                    
+                    // Fazer requisição para a rota de execução da Deriv
+                    const tradeResponse = await fetch(`${req.protocol}://${req.get('host')}/api/v1/deriv/execute-trade`, {
+                      method: 'POST',
+                      headers: {
+                        'Authorization': req.headers.authorization,
+                        'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ pair, type, amount, stopLoss, takeProfit })
+                    });
+                    
+                    if (tradeResponse.ok) {
+                      const tradeData = await tradeResponse.json();
+                      console.log('✅ Trade executado na Deriv:', tradeData);
+                      return res.json(tradeData);
+                    } else {
+                      console.log('⚠️ Erro na Deriv, usando simulação local');
+                    }
+                  } catch (derivError) {
+                    console.log('⚠️ Erro ao executar na Deriv, usando simulação local:', derivError.message);
+                  }
+                } else {
+                  console.log('📊 Executando trade simulado - token Deriv não configurado');
+                }
+
+                // MODO DESENVOLVIMENTO: Sempre simular trades para teste
+                console.log('🧪 MODO DESENVOLVIMENTO: Simulando trade para teste');
 
     // Simulação de execução de trade (fallback)
+    const isWin = Math.random() > 0.4; // 60% chance de ganhar
+    const profitMultiplier = isWin ? 0.8 : -1.0; // Ganha 80% ou perde 100%
+    const profit = amount * profitMultiplier;
+    
     const tradeResult = {
       id: Date.now(),
       pair,
@@ -113,8 +120,14 @@ router.post('/execute', tradingLimiter, authMiddleware, tradingMiddleware, valid
       amount,
       status: 'executed',
       timestamp: new Date(),
-      profit: Math.random() > 0.5 ? amount * 0.02 : -amount * 0.01,
-      realTrade: false
+      profit: profit,
+      realTrade: false,
+      simulation: true,
+      message: isWin ? 'Trade simulado: GANHOU!' : 'Trade simulado: PERDEU!',
+      contractId: `SIM_${Date.now()}`,
+      entryPrice: Math.random() * 1000 + 50000, // Preço simulado
+      exitPrice: Math.random() * 1000 + 50000,  // Preço simulado
+      duration: '5m'
     };
 
     res.json({

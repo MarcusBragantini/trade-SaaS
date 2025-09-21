@@ -256,18 +256,14 @@ router.post('/execute-trade', async (req, res) => {
     
     console.log('🚀 Executando trade real na Deriv:', { pair, type, amount, user: user.id });
 
-    // Para demonstração, simular execução de trade
-    // Em produção, aqui você faria a chamada real para a API da Deriv
-    const tradeResult = {
-      id: Date.now(),
+    // Executar trade real na Deriv via WebSocket
+    const tradeResult = await executeRealTrade(user.deriv_api_token, {
       pair,
       type,
       amount,
-      status: 'executed',
-      timestamp: new Date(),
-      profit: Math.random() > 0.5 ? amount * 0.02 : -amount * 0.01,
-      realTrade: true
-    };
+      stopLoss,
+      takeProfit
+    });
 
     console.log('✅ Trade executado na Deriv:', tradeResult);
 
@@ -284,5 +280,149 @@ router.post('/execute-trade', async (req, res) => {
     });
   }
 });
+
+// Função para executar trade real na Deriv
+async function executeRealTrade(token, tradeParams) {
+  return new Promise((resolve, reject) => {
+    const { pair, type, amount, stopLoss, takeProfit } = tradeParams;
+    
+    // Mapear tipo para formato da Deriv
+    const contractType = type.toUpperCase() === 'CALL' ? 'CALL' : 'PUT';
+    
+    // Conectar ao WebSocket da Deriv
+    const ws = new WebSocket(DERIV_API_URL);
+    
+    let isResolved = false;
+    
+    ws.on('open', () => {
+      console.log('🔌 Conectado à Deriv para execução de trade');
+      
+      // Autorizar
+      ws.send(JSON.stringify({
+        authorize: token
+      }));
+    });
+    
+    ws.on('message', (data) => {
+      try {
+        const response = JSON.parse(data);
+        console.log('📨 Resposta da Deriv:', response);
+        
+        if (response.msg_type === 'authorize') {
+          if (response.error) {
+            console.error('❌ Erro de autorização:', response.error);
+            if (!isResolved) {
+              isResolved = true;
+              reject(new Error(`Erro de autorização: ${response.error.message}`));
+            }
+            return;
+          }
+          
+          console.log('✅ Autorizado na Deriv');
+          
+          // Solicitar proposta de contrato
+          ws.send(JSON.stringify({
+            proposal: 1,
+            amount: amount,
+            basis: 'stake',
+            contract_type: contractType,
+            currency: 'USD',
+            duration: 5, // 5 minutos
+            duration_unit: 'm',
+            symbol: pair
+          }));
+        }
+        
+        if (response.msg_type === 'proposal') {
+          if (response.error) {
+            console.error('❌ Erro na proposta:', response.error);
+            if (!isResolved) {
+              isResolved = true;
+              reject(new Error(`Erro na proposta: ${response.error.message}`));
+            }
+            return;
+          }
+          
+          console.log('💰 Proposta recebida:', response.proposal);
+          
+          // Comprar o contrato
+          ws.send(JSON.stringify({
+            buy: response.proposal.id,
+            price: response.proposal.ask_price
+          }));
+        }
+        
+        if (response.msg_type === 'buy') {
+          if (response.error) {
+            console.error('❌ Erro na compra:', response.error);
+            if (!isResolved) {
+              isResolved = true;
+              reject(new Error(`Erro na compra: ${response.error.message}`));
+            }
+            return;
+          }
+          
+          console.log('✅ Contrato comprado:', response.buy);
+          
+          const tradeResult = {
+            id: response.buy.contract_id,
+            pair: pair,
+            type: type,
+            amount: amount,
+            status: 'executed',
+            timestamp: new Date(),
+            contractId: response.buy.contract_id,
+            realTrade: true,
+            stopLoss: stopLoss,
+            takeProfit: takeProfit
+          };
+          
+          if (!isResolved) {
+            isResolved = true;
+            resolve(tradeResult);
+          }
+          
+          ws.close();
+        }
+        
+      } catch (error) {
+        console.error('❌ Erro ao processar resposta:', error);
+        if (!isResolved) {
+          isResolved = true;
+          reject(error);
+        }
+      }
+    });
+    
+    ws.on('error', (error) => {
+      console.error('❌ Erro WebSocket:', error);
+      if (error.message.includes('401')) {
+        console.error('🔑 Token da Deriv expirado ou inválido');
+        if (!isResolved) {
+          isResolved = true;
+          reject(new Error('Token da Deriv expirado ou inválido. Por favor, configure um novo token.'));
+        }
+      } else {
+        if (!isResolved) {
+          isResolved = true;
+          reject(error);
+        }
+      }
+    });
+    
+    ws.on('close', () => {
+      console.log('🔌 Conexão WebSocket fechada');
+    });
+    
+    // Timeout de 30 segundos
+    setTimeout(() => {
+      if (!isResolved) {
+        isResolved = true;
+        ws.close();
+        reject(new Error('Timeout na execução do trade'));
+      }
+    }, 30000);
+  });
+}
 
 module.exports = router;

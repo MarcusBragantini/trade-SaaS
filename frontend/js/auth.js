@@ -8,8 +8,64 @@ class AuthManager {
     async init() {
         console.log('AuthManager initializing...');
         await this.waitForDOM();
+        
+        // Auto-login para desenvolvimento
+        const autoLoginSuccess = await this.autoLogin();
+        
+        // Atualizar token após auto-login
+        if (autoLoginSuccess) {
+            this.token = localStorage.getItem('authToken');
+        }
+        
         this.bindEvents();
         await this.checkAuthStatus();
+    }
+
+    async autoLogin() {
+        try {
+            console.log('🚀 Auto-login ativado para desenvolvimento...');
+            const response = await fetch(getApiUrl('/api/v1/auth/login'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: 'bragantini34@gmail.com',
+                    password: 'Mvb081521'
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📊 Resposta completa do auto-login:', data);
+                
+                if (data.status === 'success') {
+                    // O token está em data.data.token, não em data.token
+                    const token = data.data?.token;
+                    const user = data.data?.user;
+                    
+                    if (token) {
+                        localStorage.setItem('authToken', token);
+                        localStorage.setItem('user', JSON.stringify(user));
+                        console.log('✅ Auto-login realizado com sucesso!');
+                        console.log('🔑 Token salvo:', token.substring(0, 20) + '...');
+                        console.log('👤 Usuário salvo:', user);
+                        return true;
+                    } else {
+                        console.error('❌ Token não encontrado na resposta:', data);
+                    }
+                } else {
+                    console.error('❌ Auto-login falhou:', data.message);
+                }
+            } else {
+                console.error('❌ Erro HTTP no auto-login:', response.status);
+                const errorText = await response.text();
+                console.error('❌ Detalhes do erro:', errorText);
+            }
+        } catch (error) {
+            console.log('⚠️ Auto-login falhou, usuário precisa fazer login manual:', error.message);
+        }
+        return false;
     }
 
     async waitForDOM() {
@@ -20,12 +76,12 @@ class AuthManager {
             });
         }
         
-        // Verificar se os elementos existem
+        // Verificar se os elementos existem (opcional para sistema simplificado)
         const authModal = document.getElementById('auth-modal');
         const loginBtn = document.getElementById('login-btn');
         
         if (!authModal) {
-            console.error('Auth modal not found!');
+            console.log('Auth modal not found - using simplified system');
             return;
         }
         
@@ -129,7 +185,7 @@ class AuthManager {
             this.showLoginForm();
             console.log('Auth modal shown');
         } else {
-            console.error('Cannot show auth modal - element not found');
+            console.log('Cannot show auth modal - element not found (simplified system)');
         }
     }
 
@@ -143,7 +199,11 @@ class AuthManager {
         console.log('Checking authentication status...');
         console.log('Token in storage:', this.token);
         
-        if (this.token) {
+        // Verificar token no localStorage também
+        const localStorageToken = localStorage.getItem('authToken');
+        console.log('Token no localStorage:', localStorageToken ? 'Presente' : 'Ausente');
+        
+        if (this.token || localStorageToken) {
             try {
                 console.log('Testing token validity...');
                 const response = await fetch(getApiUrl('/api/v1/auth/profile'), {
@@ -160,7 +220,9 @@ class AuthManager {
                     console.log('User authenticated successfully:', this.currentUser.email);
                     
                     // Dispatch auth state changed event
-                    document.dispatchEvent(new CustomEvent('authStateChanged'));
+                    document.dispatchEvent(new CustomEvent('authStateChanged', {
+                        detail: { isAuthenticated: true, user: this.currentUser }
+                    }));
                 } else {
                     console.log('Token invalid or expired');
                     this.handleInvalidToken();
@@ -171,7 +233,13 @@ class AuthManager {
             }
         } else {
             console.log('No token found, showing login');
-            this.showAuthModal();
+            // Verificar se existe modal antes de tentar mostrar
+            const authModal = document.getElementById('auth-modal');
+            if (authModal) {
+                this.showAuthModal();
+            } else {
+                console.log('No auth modal found - using simplified system');
+            }
         }
     }
 
@@ -181,7 +249,15 @@ class AuthManager {
         this.token = null;
         this.isAuthenticated = false;
         this.currentUser = null;
-        this.showAuthModal();
+        
+        // Verificar se existe modal antes de tentar mostrar
+        const authModal = document.getElementById('auth-modal');
+        if (authModal) {
+            this.showAuthModal();
+        } else {
+            console.log('No auth modal found - using simplified system');
+        }
+        
         this.showToast('Sessão expirada', 'Por favor, faça login novamente', 'warning');
     }
 
@@ -347,7 +423,15 @@ class AuthManager {
     }
 
     getAuthHeaders() {
-        if (!this.token) {
+        // Sempre verificar o localStorage para o token mais recente
+        const currentToken = localStorage.getItem('authToken');
+        
+        console.log('🔑 getAuthHeaders - Token encontrado:', currentToken ? 'Sim' : 'Não');
+        if (currentToken) {
+            console.log('🔑 Token (primeiros 20 chars):', currentToken.substring(0, 20) + '...');
+        }
+        
+        if (!currentToken) {
             console.warn('No token available for auth headers');
             return {
                 'Content-Type': 'application/json'
@@ -355,7 +439,7 @@ class AuthManager {
         }
 
         return {
-            'Authorization': `Bearer ${this.token}`,
+            'Authorization': `Bearer ${currentToken}`,
             'Content-Type': 'application/json'
         };
     }

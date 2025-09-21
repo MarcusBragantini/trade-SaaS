@@ -208,6 +208,44 @@ router.get('/profile', authMiddleware, async (req, res) => {
   }
 });
 
+// Configure Deriv API token
+router.post('/deriv-token', authMiddleware, async (req, res) => {
+  try {
+    const { token } = req.body;
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Usuário não encontrado'
+      });
+    }
+
+    if (!token) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Token da Deriv é obrigatório'
+      });
+    }
+
+    // Atualizar token da Deriv
+    await User.updateById(req.userId, { deriv_api_token: token });
+    
+    console.log(`✅ Token da Deriv configurado para usuário ${req.userId}`);
+    
+    res.json({
+      status: 'success',
+      message: 'Token da Deriv configurado com sucesso'
+    });
+  } catch (error) {
+    console.error('Erro ao configurar token Deriv:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro interno do servidor'
+    });
+  }
+});
+
 // Update user profile
 router.put('/profile', authMiddleware, validateUpdateProfile, async (req, res) => {
   try {

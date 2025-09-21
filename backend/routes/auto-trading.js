@@ -8,24 +8,42 @@ const { tradingLimiter } = require('../middleware/rateLimiting');
 const traders = new Map();
 
 // Middleware para obter trader do usuário
-const getTrader = (req, res, next) => {
-    const userId = req.user.id;
-    
-    if (!traders.has(userId)) {
-        // Criar novo trader se não existir
-        const derivToken = req.user.derivApiToken;
-        if (!derivToken) {
+const getTrader = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        
+        // Buscar usuário no banco para obter token da Deriv
+        const User = require('../models/User');
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Usuário não encontrado'
+            });
+        }
+        
+        if (!user.deriv_api_token) {
             return res.status(400).json({
                 status: 'error',
                 message: 'Token da Deriv não configurado'
             });
         }
         
-        traders.set(userId, new AutoTrader(userId, derivToken));
+        if (!traders.has(userId)) {
+            // Criar novo trader se não existir
+            traders.set(userId, new AutoTrader(userId, user.deriv_api_token));
+        }
+        
+        req.trader = traders.get(userId);
+        next();
+    } catch (error) {
+        console.error('Erro no middleware getTrader:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Erro interno do servidor'
+        });
     }
-    
-    req.trader = traders.get(userId);
-    next();
 };
 
 // Iniciar trading automático
