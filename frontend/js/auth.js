@@ -158,6 +158,9 @@ class AuthManager {
                     this.currentUser = data.data.user;
                     this.showDashboard();
                     console.log('User authenticated successfully:', this.currentUser.email);
+                    
+                    // Dispatch auth state changed event
+                    document.dispatchEvent(new CustomEvent('authStateChanged'));
                 } else {
                     console.log('Token invalid or expired');
                     this.handleInvalidToken();
@@ -213,6 +216,9 @@ class AuthManager {
                 this.closeAllModals();
                 this.showDashboard();
                 this.showToast('Sucesso', 'Login realizado com sucesso', 'success');
+                
+                // Dispatch auth state changed event
+                document.dispatchEvent(new CustomEvent('authStateChanged'));
             } else {
                 this.showToast('Erro', data.message, 'error');
             }

@@ -362,9 +362,160 @@
                     </div>
                 </section>
 
-                <!-- Other sections will be implemented similarly -->
+                <!-- AI Analysis Section -->
                 <section id="analysis-section" class="content-section">
-                    <!-- AI Analysis content -->
+                    <div class="section-header">
+                        <h1>Análise de IA</h1>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="ai-settings-btn">
+                                <i class="fas fa-cog"></i> Configurações
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="analysis-layout">
+                        <!-- Currency Selection -->
+                        <div class="analysis-controls">
+                            <div class="control-group">
+                                <label for="currency-selector">Moeda</label>
+                                <select id="currency-selector" class="form-control">
+                                    <option value="EURUSD">EUR/USD - Euro vs Dólar Americano</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <button class="btn btn-primary" id="analyze-btn">
+                                    <i class="fas fa-brain"></i> Analisar
+                                </button>
+                                <button class="btn btn-secondary" id="auto-analyze-btn">
+                                    Iniciar Análise Automática
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Analysis Results -->
+                        <div class="analysis-results">
+                            <div class="analysis-header">
+                                <h3>Análise Atual</h3>
+                                <div class="analysis-info">
+                                    <span id="analysis-symbol">EURUSD</span>
+                                    <span id="analysis-timestamp">-</span>
+                                </div>
+                            </div>
+
+                            <div class="analysis-grid">
+                                <!-- Signals -->
+                                <div class="analysis-card">
+                                    <h4>Sinais</h4>
+                                    <div class="signal-item">
+                                        <span class="signal-label">Tendência:</span>
+                                        <span class="signal-value trend-bullish" id="trend-signal">-</span>
+                                    </div>
+                                    <div class="signal-item">
+                                        <span class="signal-label">Força:</span>
+                                        <span class="signal-value" id="strength-value">-</span>
+                                    </div>
+                                    <div class="signal-item">
+                                        <span class="signal-label">Confiança:</span>
+                                        <span class="signal-value" id="confidence-value">-</span>
+                                    </div>
+                                </div>
+
+                                <!-- Indicators -->
+                                <div class="analysis-card">
+                                    <h4>Indicadores Técnicos</h4>
+                                    <div class="indicator-item">
+                                        <span class="indicator-label">RSI:</span>
+                                        <span class="indicator-value" id="rsi-value">-</span>
+                                    </div>
+                                    <div class="indicator-item">
+                                        <span class="indicator-label">MACD:</span>
+                                        <span class="indicator-value" id="macd-signal">-</span>
+                                    </div>
+                                    <div class="indicator-item">
+                                        <span class="indicator-label">SMA 20:</span>
+                                        <span class="indicator-value" id="sma20-value">-</span>
+                                    </div>
+                                    <div class="indicator-item">
+                                        <span class="indicator-label">SMA 50:</span>
+                                        <span class="indicator-value" id="sma50-value">-</span>
+                                    </div>
+                                    <div class="indicator-item">
+                                        <span class="indicator-label">EMA 12:</span>
+                                        <span class="indicator-value" id="ema12-value">-</span>
+                                    </div>
+                                </div>
+
+                                <!-- Recommendation -->
+                                <div class="analysis-card recommendation-card">
+                                    <h4>Recomendação da IA</h4>
+                                    <div class="recommendation-main">
+                                        <span class="recommendation-action" id="recommendation-action">-</span>
+                                    </div>
+                                    <div class="recommendation-details">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Entrada:</span>
+                                            <span class="detail-value" id="recommendation-entry">-</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Stop Loss:</span>
+                                            <span class="detail-value" id="recommendation-stop-loss">-</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Take Profit:</span>
+                                            <span class="detail-value" id="recommendation-take-profit">-</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Risk/Reward:</span>
+                                            <span class="detail-value" id="recommendation-risk-reward">-</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-full" id="execute-from-analysis">
+                                        Executar Trade
+                                    </button>
+                                </div>
+
+                                <!-- Market Conditions -->
+                                <div class="analysis-card">
+                                    <h4>Condições de Mercado</h4>
+                                    <div class="condition-item">
+                                        <span class="condition-label">Volatilidade:</span>
+                                        <span class="condition-value" id="volatility-value">-</span>
+                                    </div>
+                                    <div class="condition-item">
+                                        <span class="condition-label">Volume:</span>
+                                        <span class="condition-value" id="volume-value">-</span>
+                                    </div>
+                                    <div class="condition-item">
+                                        <span class="condition-label">Spread:</span>
+                                        <span class="condition-value" id="spread-value">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart Placeholder -->
+                        <div class="analysis-chart">
+                            <div class="chart-container">
+                                <div class="chart-header">
+                                    <h4>Gráfico de Análise</h4>
+                                    <div class="chart-controls">
+                                        <select class="form-control">
+                                            <option value="1m">1 minuto</option>
+                                            <option value="5m">5 minutos</option>
+                                            <option value="15m">15 minutos</option>
+                                            <option value="1h">1 hora</option>
+                                            <option value="4h">4 horas</option>
+                                            <option value="1d">1 dia</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="chart-placeholder">
+                                    <i class="fas fa-chart-line"></i>
+                                    <p>Gráfico será carregado após análise</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
                 <section id="history-section" class="content-section">
@@ -392,11 +543,13 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label for="api-token">Token da API</label>
-                    <input type="password" id="api-token" placeholder="Seu token da API Deriv" required>
+                    <input type="password" id="api-token" placeholder="Ex: 7yMoFuMjSkkkO64" required>
                     <p class="help-text">
                         <a href="https://app.deriv.com/account/api-token" target="_blank">
                             Como obter meu token API?
                         </a>
+                        <br>
+                        <small>⚠️ Use um token válido da Deriv (13 caracteres)</small>
                     </p>
                 </div>
                 <div class="form-group">
@@ -455,5 +608,6 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="js/dashboard.js"></script>
     <script src="js/trading.js"></script>
     <script src="js/subscription.js"></script>
+    <script src="js/ai-analysis.js"></script>
 </body>
 </html>

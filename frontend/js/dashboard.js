@@ -4,7 +4,7 @@ class DashboardManager {
     }
 
     init() {
-        console.log('DashboardManager initialized');
+        console.log('🚀 DashboardManager initialized');
         this.bindEvents();
         this.loadDashboardData();
         this.updateMarketTime();
@@ -96,6 +96,7 @@ class DashboardManager {
 
 async loadDashboardData() {
     try {
+        console.log('🔄 Loading dashboard data...');
         console.log('Token:', window.authManager.token); // Debug
         console.log('Auth headers:', window.authManager.getAuthHeaders()); // Debug
         
@@ -107,25 +108,28 @@ async loadDashboardData() {
         
         if (response.ok) {
             const data = await response.json();
+            console.log('📊 Dashboard data received:', data); // Debug
             this.updateDashboard(data.data);
         } else {
             const errorData = await response.json().catch(() => ({}));
-            console.error('Error loading dashboard data:', response.status, errorData);
+            console.error('❌ Error loading dashboard data:', response.status, errorData);
             
             if (response.status === 401) {
                 window.authManager.handleInvalidToken();
             }
         }
     } catch (error) {
-        console.error('Error loading dashboard:', error);
+        console.error('❌ Error loading dashboard:', error);
     }
 }
 
     updateDashboard(data) {
+        console.log('📈 Updating dashboard with data:', data);
         document.getElementById('balance-value').textContent = `$${data.balance.toFixed(2)}`;
         document.getElementById('daily-profit').textContent = `$${data.dailyProfit.toFixed(2)}`;
         document.getElementById('open-positions').textContent = data.openPositions;
         document.getElementById('win-rate').textContent = `${data.winRate}%`;
+        console.log('✅ Dashboard updated successfully');
     }
 
     updateMarketTime() {
@@ -152,7 +156,9 @@ async loadDashboardData() {
     showAPIModal() {
         // Implementar modal de API
         console.log('Show API modal');
-        document.getElementById('api-modal').style.display = 'block';
+        const apiModal = document.getElementById('api-modal');
+        apiModal.style.display = 'block';
+        apiModal.classList.add('show');
     }
 
     showProfileModal() {
@@ -241,5 +247,7 @@ function initDashboardAfterAuth() {
 document.addEventListener('authStateChanged', initDashboardAfterAuth);
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOM loaded, creating dashboard manager');
     window.dashboardManager = new DashboardManager();
+    // Don't init here - wait for authentication
 });

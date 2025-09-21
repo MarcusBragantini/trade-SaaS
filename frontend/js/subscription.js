@@ -85,7 +85,9 @@ async loadPlans() {
     }
 
     showPlans() {
-        document.getElementById('subscription-modal').style.display = 'block';
+        const subscriptionModal = document.getElementById('subscription-modal');
+        subscriptionModal.style.display = 'block';
+        subscriptionModal.classList.add('show');
     }
 
 async selectPlan(planId, interval) {
@@ -109,16 +111,24 @@ async selectPlan(planId, interval) {
 }
 
     async saveAPICredentials() {
-        const apiToken = document.getElementById('api-token').value;
-        const appId = document.getElementById('app-id').value;
+        console.log('💾 Saving API credentials...');
+        const apiToken = document.getElementById('api-token').value.trim();
+        const appId = document.getElementById('app-id').value.trim();
 
         if (!apiToken) {
             window.authManager.showToast('Erro', 'Token API é obrigatório', 'error');
             return;
         }
 
+        // Validar formato do token (tokens da Deriv geralmente têm 13 caracteres)
+        if (apiToken.length < 10) {
+            window.authManager.showToast('Erro', 'Token API parece inválido. Tokens da Deriv têm pelo menos 10 caracteres.', 'error');
+            return;
+        }
+
         try {
-            const response = await fetch('/api/v1/auth/deriv-credentials', {
+            console.log('📡 Sending request to save credentials...');
+            const response = await fetch(getApiUrl('/api/v1/auth/deriv-credentials'), {
                 method: 'POST',
                 headers: {
                     ...window.authManager.getAuthHeaders(),
@@ -131,14 +141,23 @@ async selectPlan(planId, interval) {
             });
 
             if (response.ok) {
+                console.log('✅ API credentials saved successfully');
                 window.authManager.showToast('Sucesso', 'Credenciais salvas com sucesso', 'success');
-                document.getElementById('api-modal').style.display = 'none';
+                this.closeModals();
                 
                 // Atualizar status da API
                 document.getElementById('api-status').innerHTML = `
                     <div class="status-indicator connected"></div>
                     <span>API Configurada</span>
                 `;
+                
+                // Recarregar dados do dashboard
+                console.log('🔄 Reloading dashboard data...');
+                if (window.dashboardManager) {
+                    window.dashboardManager.loadDashboardData();
+                } else {
+                    console.error('❌ Dashboard manager not found!');
+                }
             } else {
                 const error = await response.json();
                 window.authManager.showToast('Erro', error.message, 'error');
@@ -152,12 +171,13 @@ async selectPlan(planId, interval) {
     closeModals() {
         document.querySelectorAll('.modal').forEach(modal => {
             modal.style.display = 'none';
+            modal.classList.remove('show');
         });
     }
 
     async getCurrentSubscription() {
         try {
-            const response = await fetch('/api/v1/subscription/current', {
+            const response = await fetch(getApiUrl('/api/v1/subscription/current'), {
                 headers: window.authManager.getAuthHeaders()
             });
 

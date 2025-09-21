@@ -18,6 +18,7 @@ const tradingRoutes = require('./routes/trading');
 const subscriptionRoutes = require('./routes/subscription');
 const adminRoutes = require('./routes/admin');
 const derivRoutes = require('./routes/deriv');
+const aiAnalysisRoutes = require('./routes/ai-analysis');
 
 // Import middleware
 const authMiddleware = require('./middleware/auth');
@@ -73,6 +74,7 @@ app.use('/api/v1/trading', authMiddleware, tradingRoutes);
 app.use('/api/v1/subscription', authMiddleware, subscriptionRoutes);
 app.use('/api/v1/admin', authMiddleware, adminRoutes);
 app.use('/api/v1/deriv', authMiddleware, derivRoutes);
+app.use('/api/v1/ai', authMiddleware, aiAnalysisRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {

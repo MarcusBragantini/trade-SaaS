@@ -1,7 +1,7 @@
 const express = require('express');
 const { validateTradeExecution } = require('../middleware/validation');
 const authMiddleware = require('../middleware/auth');
-const subscriptionMiddleware = require('../middleware/subscription');
+const { subscriptionMiddleware, tradingMiddleware } = require('../middleware/subscription');
 const User = require('../models/User');
 const router = express.Router();
 
@@ -18,29 +18,50 @@ router.get('/test', (req, res) => {
 router.get('/dashboard', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    
+    const toNumber = (v) => typeof v === 'number' ? v : (v ? Number(v) : 0);
+
+    let balance = toNumber(user && user.balance);
+    let dailyProfit = 0;
+    let openPositions = 0;
+    let winRate = 0;
+
+    // Se o usuário tem credenciais da Deriv, tentar buscar dados reais
+    if (user && user.deriv_api_token) {
+      try {
+        // Fazer requisição para a rota de balance da Deriv
+        const balanceResponse = await fetch(`${req.protocol}://${req.get('host')}/api/v1/deriv/balance`, {
+          headers: {
+            'Authorization': req.headers.authorization
+          }
+        });
+        
+        if (balanceResponse.ok) {
+          const balanceData = await balanceResponse.json();
+          if (balanceData.status === 'success') {
+            balance = balanceData.data.balance;
+            dailyProfit = balanceData.data.profit || 0;
+          }
+        }
+      } catch (derivError) {
+        console.log('Erro ao buscar dados da Deriv, usando dados locais:', derivError.message);
+      }
+    }
+
     const dashboardData = {
-      balance: user.balance || 0,
-      dailyProfit: 150.50,
-      openPositions: 2,
-      winRate: 65
+      balance,
+      dailyProfit,
+      openPositions,
+      winRate
     };
 
-    res.json({
-      status: 'success',
-      data: dashboardData
-    });
+    res.json({ status: 'success', data: dashboardData });
   } catch (error) {
     console.error('Dashboard error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Erro ao carregar dashboard'
-    });
+    res.status(500).json({ status: 'error', message: 'Erro ao carregar dashboard' });
   }
 });
-
-// Execute trade (protegida por auth)
-router.post('/execute', authMiddleware, subscriptionMiddleware, validateTradeExecution, async (req, res) => {
+// Execute trade (protegida por auth e trading)
+router.post('/execute', authMiddleware, tradingMiddleware, validateTradeExecution, async (req, res) => {
   try {
     const { pair, type, amount, stopLoss, takeProfit } = req.body;
 
@@ -69,8 +90,8 @@ router.post('/execute', authMiddleware, subscriptionMiddleware, validateTradeExe
   }
 });
 
-// Get open positions (protegida por auth)
-router.get('/positions', authMiddleware, async (req, res) => {
+// Get open positions (protegida por auth e trading)
+router.get('/positions', authMiddleware, tradingMiddleware, async (req, res) => {
   try {
     // Simulação de posições abertas
     const positions = [
@@ -109,8 +130,8 @@ router.get('/positions', authMiddleware, async (req, res) => {
   }
 });
 
-// Close position (protegida por auth)
-router.post('/positions/:id/close', authMiddleware, async (req, res) => {
+// Close position (protegida por auth e trading)
+router.post('/positions/:id/close', authMiddleware, tradingMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
 
