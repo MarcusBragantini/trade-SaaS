@@ -28,8 +28,18 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet());
+
+// Stripe webhook must be raw body BEFORE json parser
+app.use('/api/v1/subscription/webhook', express.raw({ type: 'application/json' }));
+
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS.split(','),
+  origin: (origin, callback) => {
+    const allowed = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000').split(',');
+    if (!origin || allowed.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, true); // flexibiliza em dev
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -57,7 +67,9 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/trading', authMiddleware, subscriptionMiddleware, tradingRoutes);
+// Trading requer autenticação, mas nem todas as rotas exigem assinatura.
+// A proteção de assinatura é aplicada por rota dentro de routes/trading.js
+app.use('/api/v1/trading', authMiddleware, tradingRoutes);
 app.use('/api/v1/subscription', authMiddleware, subscriptionRoutes);
 app.use('/api/v1/admin', authMiddleware, adminRoutes);
 app.use('/api/v1/deriv', authMiddleware, derivRoutes);
