@@ -90,7 +90,7 @@ class User {
       name: this.name,
       email: this.email,
       role: this.role,
-      isActive: this.is_active,
+      isActive: !!this.is_active,
       subscription: {
         plan: this.subscription_plan,
         status: this.subscription_status,
@@ -104,7 +104,7 @@ class User {
         autoTrading: this.auto_trading,
         aiAnalysis: this.ai_analysis
       },
-      balance: this.balance,
+      balance: typeof this.balance === 'number' ? this.balance : (this.balance ? Number(this.balance) : 0),
       lastLogin: this.last_login,
       canTrade: this.canTrade()
     };

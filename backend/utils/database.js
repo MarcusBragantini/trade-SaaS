@@ -24,7 +24,8 @@ async function initializeDatabase() {
       password: process.env.DB_PASSWORD || '',
       database: process.env.DB_NAME || 'forexai_trading',
       charset: 'utf8mb4',
-      timezone: '+00:00'
+      timezone: '+00:00',
+      decimalNumbers: true
     };
 
     db = mysql.createConnection(config);

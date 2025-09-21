@@ -19,8 +19,9 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
     
+    const toNumber = (v) => typeof v === 'number' ? v : (v ? Number(v) : 0);
     const dashboardData = {
-      balance: user.balance || 0,
+      balance: toNumber(user && user.balance),
       dailyProfit: 150.50,
       openPositions: 2,
       winRate: 65
