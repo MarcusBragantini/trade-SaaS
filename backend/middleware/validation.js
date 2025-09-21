@@ -72,15 +72,26 @@ const updateProfileSchema = Joi.object({
 const derivCredentialsSchema = Joi.object({
   apiToken: Joi.string()
     .min(10)
-    .required()
+    .optional()
     .messages({
-      'string.empty': 'O token da API é obrigatório',
       'string.min': 'O token da API deve ter pelo menos 10 caracteres'
+    }),
+  apiTokenReal: Joi.string()
+    .min(10)
+    .optional()
+    .messages({
+      'string.min': 'O token Real deve ter pelo menos 10 caracteres'
+    }),
+  apiTokenDemo: Joi.string()
+    .min(10)
+    .optional()
+    .messages({
+      'string.min': 'O token Demo deve ter pelo menos 10 caracteres'
     }),
   appId: Joi.string()
     .optional()
     .allow('')
-});
+}).or('apiToken', 'apiTokenReal', 'apiTokenDemo');
 
 // Middleware de validação para registro
 const validateRegistration = (req, res, next) => {

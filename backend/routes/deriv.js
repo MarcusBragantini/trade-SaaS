@@ -153,7 +153,7 @@ router.get('/prices/:symbol', async (req, res) => {
   }
 });
 
-// Get account balance from Deriv
+// Get account balance from Deriv (usa websocket authorize + balance)
 router.get('/balance', async (req, res) => {
   try {
     const user = await User.findById(req.userId);
@@ -165,19 +165,74 @@ router.get('/balance', async (req, res) => {
       });
     }
 
-    // Dados simulados - na prática você faria uma requisição à API Deriv
-    const balance = {
-      balance: 10000.00,
-      currency: 'USD',
-      available: 9500.00,
-      deposited: 10500.00,
-      withdrawn: 500.00,
-      profit: 150.50
-    };
+    const ws = new WebSocket(DERIV_API_URL);
 
-    res.json({
-      status: 'success',
-      data: balance
+    const send = (obj) => ws.send(JSON.stringify(obj));
+
+    let replied = false;
+    const timeout = setTimeout(() => {
+      if (!replied) {
+        replied = true;
+        try { ws.close(); } catch {}
+        res.status(504).json({ status: 'error', message: 'Deriv timeout' });
+      }
+    }, 8000);
+
+    ws.on('open', () => {
+      send({ authorize: user.deriv_api_token });
+    });
+
+    ws.on('message', (raw) => {
+      try {
+        const msg = JSON.parse(raw);
+        if (msg.error) {
+          if (!replied) {
+            replied = true;
+            clearTimeout(timeout);
+            res.status(400).json({ status: 'error', message: msg.error.message || 'Erro na Deriv' });
+            ws.close();
+          }
+          return;
+        }
+
+        if (msg.authorize) {
+          // Após authorize, solicitar saldo
+          send({ balance: 1 });
+          return;
+        }
+
+        if (msg.balance) {
+          if (!replied) {
+            replied = true;
+            clearTimeout(timeout);
+            const b = msg.balance;
+            res.json({
+              status: 'success',
+              data: {
+                balance: b.balance,
+                currency: b.currency,
+                id: b.id,
+                loginid: b.loginid
+              }
+            });
+            ws.close();
+          }
+        }
+      } catch (e) {
+        // ignore parse errors
+      }
+    });
+
+    ws.on('error', (err) => {
+      if (!replied) {
+        replied = true;
+        clearTimeout(timeout);
+        res.status(502).json({ status: 'error', message: 'Erro de conexão com Deriv' });
+      }
+    });
+
+    ws.on('close', () => {
+      clearTimeout(timeout);
     });
   } catch (error) {
     console.error('Get balance error:', error);

@@ -251,10 +251,10 @@ router.put('/profile', authMiddleware, validateUpdateProfile, async (req, res) =
   }
 });
 
-// Update Deriv API credentials
+// Update Deriv API credentials (suporta tokens Real/Demo)
 router.post('/deriv-credentials', authMiddleware, validateDerivCredentials, async (req, res) => {
   try {
-    const { apiToken, appId } = req.body;
+    const { apiToken, apiTokenReal, apiTokenDemo, appId } = req.body;
     const user = await User.findById(req.userId);
     
     if (!user) {
@@ -272,8 +272,10 @@ router.post('/deriv-credentials', authMiddleware, validateDerivCredentials, asyn
       });
     }
 
+    // Armazenar tokens; se quiser separar em colunas distintas, ajuste o schema
+    const tokenToStore = apiToken || apiTokenReal || apiTokenDemo;
     await User.update(user.id, {
-      deriv_api_token: apiToken,
+      deriv_api_token: tokenToStore,
       deriv_app_id: appId || process.env.DERIV_APP_ID
     });
 
