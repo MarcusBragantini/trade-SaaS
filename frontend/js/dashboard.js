@@ -150,9 +150,13 @@ async loadDashboardData() {
     }
 
     showAPIModal() {
-        // Implementar modal de API
+        // Abrir modal de API
         console.log('Show API modal');
-        document.getElementById('api-modal').style.display = 'block';
+        const modal = document.getElementById('api-modal');
+        if (modal) {
+            modal.style.display = 'block';
+            modal.classList.add('show');
+        }
     }
 
     showProfileModal() {

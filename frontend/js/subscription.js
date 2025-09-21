@@ -123,7 +123,7 @@ async selectPlan(planId, interval) {
         }
 
         try {
-            const response = await fetch('/api/v1/auth/deriv-credentials', {
+            const response = await fetch(getApiUrl('/api/v1/auth/deriv-credentials'), {
                 method: 'POST',
                 headers: {
                     ...window.authManager.getAuthHeaders(),
