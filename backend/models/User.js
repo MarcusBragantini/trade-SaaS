@@ -81,7 +81,22 @@ class User {
   }
 
   canTrade() {
-    return !!(this.is_active && this.hasActiveSubscription() && this.deriv_api_token);
+    const hasToken = this.deriv_account_type === 'demo' 
+      ? this.deriv_demo_token 
+      : this.deriv_real_token;
+    return !!(this.is_active && this.hasActiveSubscription() && hasToken);
+  }
+
+  getDerivToken() {
+    return this.deriv_account_type === 'demo' 
+      ? this.deriv_demo_token 
+      : this.deriv_real_token;
+  }
+
+  getDerivAppId() {
+    return this.deriv_account_type === 'demo' 
+      ? this.deriv_demo_app_id 
+      : this.deriv_real_app_id;
   }
 
   toJSON() {
@@ -107,8 +122,18 @@ class User {
       balance: this.balance,
       lastLogin: this.last_login,
       canTrade: this.canTrade(),
-      deriv_api_token: this.deriv_api_token,
-      deriv_app_id: this.deriv_app_id
+      deriv: {
+        accountType: this.deriv_account_type,
+        demoToken: this.deriv_demo_token,
+        demoAppId: this.deriv_demo_app_id,
+        realToken: this.deriv_real_token,
+        realAppId: this.deriv_real_app_id,
+        activeToken: this.getDerivToken(),
+        activeAppId: this.getDerivAppId()
+      },
+      // Manter compatibilidade com código antigo
+      deriv_api_token: this.getDerivToken(),
+      deriv_app_id: this.getDerivAppId()
     };
   }
 

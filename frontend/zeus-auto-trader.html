@@ -77,6 +77,24 @@
         .deriv-status {
             font-size: 1em;
             color: #4488ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .switch-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .switch-btn:hover {
+            background: #45a049;
         }
 
         .deriv-connected {
@@ -312,7 +330,8 @@
                 🔴 PARADO
             </div>
             <div id="deriv-status" class="deriv-status">
-                🔗 Deriv: <span id="deriv-connection">Verificando...</span>
+                <span id="deriv-connection">Verificando...</span>
+                <button id="switch-account-btn" class="switch-btn" onclick="switchAccount()">🔄 Trocar Conta</button>
             </div>
             <div class="balance">
                 Saldo: <span id="balance">$0.00</span>
@@ -424,7 +443,7 @@
                 this.apiBase = 'http://localhost:5001/api/v1';
                 this.derivConnected = false;
                 this.realBalance = 0;
-                this.productionMode = true; // Modo produção - logs limpos
+                this.productionMode = false; // Modo debug - todos os logs
             }
 
             async init() {
@@ -504,15 +523,21 @@
                     
                     // Validar sinal antes de processar
                     if (!signal || !signal.action || signal.confidence === undefined) {
-                        this.log(`❌ Sinal inválido recebido`, 'error');
+                        this.log(`❌ Sinal inválido recebido: ${JSON.stringify(signal)}`, 'error');
                         return;
                     }
+                    
+                    // Log do sinal para debug
+                    this.log(`🔍 Sinal: ${signal.action} ${signal.symbol} (${(signal.confidence * 100).toFixed(0)}%)`, 'info');
 
                     // Verificar se deve executar trade (reduzido para 5% para mais trades)
                     const shouldTrade = signal.confidence > 0.05 && signal.action !== 'HOLD';
                     
                     if (shouldTrade) {
+                        this.log(`✅ Executando trade: ${signal.action} (${(signal.confidence * 100).toFixed(0)}%)`, 'info');
                         await this.executeTrade(signal);
+                    } else {
+                        this.log(`⏸️ Trade não executado: ${signal.action} (${(signal.confidence * 100).toFixed(0)}%) - ${signal.action === 'HOLD' ? 'HOLD' : 'Confiança baixa'}`, 'info');
                     }
                 } catch (error) {
                     this.log(`❌ Erro na análise: ${error.message}`, 'error');
@@ -554,6 +579,8 @@
 
                     if (response.ok) {
                         const result = await response.json();
+                        this.log(`🤖 Resposta IA: ${JSON.stringify(result)}`, 'info');
+                        
                         if (result.success && result.data) {
                             // A IA pode retornar dados em result.data.signal ou diretamente em result.data
                             let signal = result.data;
@@ -563,11 +590,17 @@
                             
                             // Validar se a IA retornou dados válidos
                             if (signal && signal.action && signal.confidence !== undefined) {
+                                this.log(`✅ Sinal IA válido: ${signal.action} (${signal.confidence})`, 'info');
                                 return signal;
                             } else {
+                                this.log(`⚠️ Sinal IA inválido, usando fallback`, 'warning');
                                 return this.generateFallbackSignal(pair);
                             }
+                        } else {
+                            this.log(`⚠️ Resposta IA inválida, usando fallback`, 'warning');
                         }
+                    } else {
+                        this.log(`❌ Erro HTTP IA: ${response.status}`, 'error');
                     }
                     
                     // Fallback se IA falhar
@@ -584,7 +617,7 @@
                 const action = actions[Math.floor(Math.random() * actions.length)];
                 const confidence = 0.5 + Math.random() * 0.4; // 50-90%
                 
-                // Log removido para modo produção
+                this.log(`🎲 Fallback: ${action} ${pair} (${(confidence * 100).toFixed(0)}%)`, 'info');
                 
                 return {
                     symbol: pair || 'BTCUSD',
@@ -795,11 +828,11 @@
                         if (hasDerivToken) {
                             this.derivConnected = true;
                             this.updateDerivStatus(true, 'Conectado');
-                            this.log('🔗 Deriv: Token configurado - Trades REAIS', 'success');
+                            this.log('🔗 Sistema conectado - Trades ativos', 'success');
                         } else {
                             this.derivConnected = false;
-                            this.updateDerivStatus(false, 'Token não configurado');
-                            this.log('⚠️ Deriv: Token não configurado - Modo SIMULADO', 'error');
+                            this.updateDerivStatus(false, 'Desconectado');
+                            this.log('⚠️ Sistema desconectado - Modo SIMULADO', 'error');
                         }
                     } else {
                         this.derivConnected = false;
@@ -927,6 +960,82 @@
                 
                 const message = `${icon} ${signal.action} ${signal.symbol} $${trade.amount} → ${result} $${trade.profit.toFixed(2)}${strategiesText}`;
                 this.log(message, type, true);
+            }
+        }
+
+        // Função global para trocar conta
+        async function switchAccount() {
+            if (!window.titan) {
+                alert('Sistema não inicializado');
+                return;
+            }
+            
+            try {
+                const token = window.titan.getAuthToken();
+                if (!token) {
+                    alert('Token de autenticação não encontrado');
+                    return;
+                }
+
+                // Obter configuração atual
+                const response = await fetch('/api/v1/deriv-config/config', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                if (result.status !== 'success') {
+                    alert('Erro ao obter configuração atual');
+                    return;
+                }
+
+                const currentType = result.data.accountType || 'demo';
+                const newType = currentType === 'demo' ? 'real' : 'demo';
+
+                // Verificar se a nova conta tem token configurado
+                const hasToken = newType === 'demo' 
+                    ? result.data.hasDemoToken 
+                    : result.data.hasRealToken;
+
+                if (!hasToken) {
+                    const newLabel = newType === 'demo' ? 'DEMO' : 'REAL';
+                    alert(`Token da conta ${newLabel} não configurado. Configure primeiro em /deriv-tokens.html`);
+                    return;
+                }
+
+                // Confirmar troca
+                const currentLabel = currentType === 'demo' ? 'DEMO' : 'REAL';
+                const newLabel = newType === 'demo' ? 'DEMO' : 'REAL';
+                const confirmMsg = `Trocar de conta ${currentLabel} para ${newLabel}?`;
+                if (!confirm(confirmMsg)) {
+                    return;
+                }
+
+                // Atualizar tipo de conta
+                const updateResponse = await fetch('/api/v1/deriv-config/config', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accountType: newType
+                    })
+                });
+
+                const updateResult = await updateResponse.json();
+                if (updateResult.status === 'success') {
+                    alert(`Conta alterada para ${newLabel}! Recarregando...`);
+                    location.reload();
+                } else {
+                    alert('Erro ao alterar conta: ' + updateResult.message);
+                }
+
+            } catch (error) {
+                console.error('Erro ao trocar conta:', error);
+                alert('Erro ao trocar conta: ' + error.message);
             }
         }
 

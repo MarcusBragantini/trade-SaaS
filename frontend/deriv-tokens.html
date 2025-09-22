@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Zeus - Configuração Deriv</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .account-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .account-type {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .account-type.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .account-type h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .account-type.demo h3 {
+            color: #28a745;
+        }
+
+        .account-type.real h3 {
+            color: #dc3545;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .token-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .token-display h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .token-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .token-info span {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .account-selector {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Zeus</h1>
+            <p>Configuração de Tokens Deriv</p>
+        </div>
+
+        <div class="content">
+            <div id="status" class="status hidden"></div>
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Carregando configurações...</p>
+            </div>
+
+            <div id="main-content">
+                <div class="account-selector">
+                    <div class="account-type demo" data-type="demo">
+                        <h3>🎮 Conta Demo</h3>
+                        <p>Para testes e desenvolvimento</p>
+                    </div>
+                    <div class="account-type real" data-type="real">
+                        <h3>💰 Conta Real</h3>
+                        <p>Para trading com dinheiro real</p>
+                    </div>
+                </div>
+
+                <div id="demo-config" class="config-section">
+                    <h2>🎮 Configuração Demo</h2>
+                    <div class="token-display">
+                        <h4>Token Atual:</h4>
+                        <div class="token-info">
+                            <span>Token:</span>
+                            <span id="demo-token-display">Não configurado</span>
+                        </div>
+                        <div class="token-info">
+                            <span>App ID:</span>
+                            <span id="demo-appid-display">Não configurado</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="demo-token">Token Demo:</label>
+                            <input type="text" id="demo-token" placeholder="Digite seu token demo">
+                        </div>
+                        <div class="form-group">
+                            <label for="demo-appid">App ID Demo:</label>
+                            <input type="text" id="demo-appid" placeholder="Ex: 1089">
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="saveDemoConfig()">💾 Salvar Demo</button>
+                    <button class="btn btn-secondary" onclick="testDemoConnection()">🧪 Testar Demo</button>
+                </div>
+
+                <div id="real-config" class="config-section hidden">
+                    <h2>💰 Configuração Real</h2>
+                    <div class="token-display">
+                        <h4>Token Atual:</h4>
+                        <div class="token-info">
+                            <span>Token:</span>
+                            <span id="real-token-display">Não configurado</span>
+                        </div>
+                        <div class="token-info">
+                            <span>App ID:</span>
+                            <span id="real-appid-display">Não configurado</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="real-token">Token Real:</label>
+                            <input type="text" id="real-token" placeholder="Digite seu token real">
+                        </div>
+                        <div class="form-group">
+                            <label for="real-appid">App ID Real:</label>
+                            <input type="text" id="real-appid" placeholder="Ex: 1089">
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="saveRealConfig()">💾 Salvar Real</button>
+                    <button class="btn btn-secondary" onclick="testRealConnection()">🧪 Testar Real</button>
+                </div>
+
+                <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                    <h3>🎯 Conta Ativa</h3>
+                    <p>Selecione qual conta usar para trading:</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="active-account">Tipo de Conta:</label>
+                            <select id="active-account" class="form-group input">
+                                <option value="demo">Demo</option>
+                                <option value="real">Real</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="setActiveAccount()">✅ Definir Conta Ativa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentConfig = {};
+        let activeAccountType = 'demo';
+
+        // Carregar configurações ao inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tentar fazer login automático se não houver token
+            if (!getAuthToken()) {
+                autoLogin();
+            } else {
+                loadConfig();
+            }
+            setupAccountSelector();
+        });
+
+        async function autoLogin() {
+            try {
+                showStatus('Fazendo login automático...', 'info');
+                
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'bragantini34@gmail.com',
+                        password: 'Mvb081521'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success' && result.data.token) {
+                    localStorage.setItem('authToken', result.data.token);
+                    showStatus('Login realizado com sucesso!', 'success');
+                    loadConfig();
+                } else {
+                    showStatus('Erro no login automático', 'error');
+                }
+            } catch (error) {
+                console.error('Erro no login automático:', error);
+                showStatus('Erro no login automático', 'error');
+            }
+        }
+
+        function setupAccountSelector() {
+            const accountTypes = document.querySelectorAll('.account-type');
+            accountTypes.forEach(type => {
+                type.addEventListener('click', function() {
+                    const accountType = this.dataset.type;
+                    selectAccountType(accountType);
+                });
+            });
+        }
+
+        function selectAccountType(type) {
+            // Atualizar seleção visual
+            document.querySelectorAll('.account-type').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+
+            // Mostrar/ocultar seções
+            document.getElementById('demo-config').classList.toggle('hidden', type !== 'demo');
+            document.getElementById('real-config').classList.toggle('hidden', type !== 'real');
+        }
+
+        async function loadConfig() {
+            try {
+                showLoading(true);
+                const token = getAuthToken();
+                if (!token) {
+                    showStatus('Você precisa estar logado para acessar esta página', 'error');
+                    return;
+                }
+
+                const response = await fetch('/api/v1/deriv-config/config', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    currentConfig = result.data;
+                    updateDisplay();
+                    selectAccountType(currentConfig.accountType || 'demo');
+                    document.getElementById('active-account').value = currentConfig.accountType || 'demo';
+                } else {
+                    showStatus('Erro ao carregar configurações: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('Erro ao carregar configurações: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function updateDisplay() {
+            // Demo
+            document.getElementById('demo-token-display').textContent = 
+                currentConfig.hasDemoToken ? '***' + currentConfig.demoToken : 'Não configurado';
+            document.getElementById('demo-appid-display').textContent = 
+                currentConfig.demoAppId || 'Não configurado';
+
+            // Real
+            document.getElementById('real-token-display').textContent = 
+                currentConfig.hasRealToken ? '***' + currentConfig.realToken : 'Não configurado';
+            document.getElementById('real-appid-display').textContent = 
+                currentConfig.realAppId || 'Não configurado';
+        }
+
+        async function saveDemoConfig() {
+            const token = document.getElementById('demo-token').value.trim();
+            const appId = document.getElementById('demo-appid').value.trim();
+
+            if (!token || !appId) {
+                showStatus('Token e App ID são obrigatórios', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const authToken = getAuthToken();
+                
+                const response = await fetch('/api/v1/deriv-config/config', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accountType: 'demo',
+                        demoToken: token,
+                        demoAppId: appId
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showStatus('Configuração demo salva com sucesso!', 'success');
+                    loadConfig(); // Recarregar configurações
+                } else {
+                    showStatus('Erro ao salvar: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('Erro ao salvar: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function saveRealConfig() {
+            const token = document.getElementById('real-token').value.trim();
+            const appId = document.getElementById('real-appid').value.trim();
+
+            if (!token || !appId) {
+                showStatus('Token e App ID são obrigatórios', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const authToken = getAuthToken();
+                
+                const response = await fetch('/api/v1/deriv-config/config', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accountType: 'real',
+                        realToken: token,
+                        realAppId: appId
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showStatus('Configuração real salva com sucesso!', 'success');
+                    loadConfig(); // Recarregar configurações
+                } else {
+                    showStatus('Erro ao salvar: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('Erro ao salvar: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function testDemoConnection() {
+            try {
+                showLoading(true);
+                const authToken = getAuthToken();
+                
+                const response = await fetch('/api/v1/deriv-config/test', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accountType: 'demo'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showStatus('✅ Conexão demo testada com sucesso!', 'success');
+                } else {
+                    showStatus('❌ Erro no teste: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Erro no teste: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function testRealConnection() {
+            try {
+                showLoading(true);
+                const authToken = getAuthToken();
+                
+                const response = await fetch('/api/v1/deriv-config/test', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accountType: 'real'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showStatus('✅ Conexão real testada com sucesso!', 'success');
+                } else {
+                    showStatus('❌ Erro no teste: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Erro no teste: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function setActiveAccount() {
+            const accountType = document.getElementById('active-account').value;
+            
+            try {
+                showLoading(true);
+                const authToken = getAuthToken();
+                
+                const response = await fetch('/api/v1/deriv-config/config', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accountType: accountType
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showStatus(`✅ Conta ${accountType} definida como ativa!`, 'success');
+                    loadConfig(); // Recarregar configurações
+                } else {
+                    showStatus('Erro ao definir conta ativa: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('Erro ao definir conta ativa: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function getAuthToken() {
+            // Tentar obter token do localStorage primeiro
+            let token = localStorage.getItem('authToken');
+            
+            // Se não encontrar, tentar do authManager se disponível
+            if (!token && window.authManager && window.authManager.token) {
+                token = window.authManager.token;
+            }
+            
+            // Se ainda não encontrar, tentar do sessionStorage
+            if (!token) {
+                token = sessionStorage.getItem('authToken');
+            }
+            
+            return token;
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusEl.classList.add('hidden');
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('main-content').style.display = show ? 'none' : 'block';
+        }
+    </script>
+</body>
+</html>

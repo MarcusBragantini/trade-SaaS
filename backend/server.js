@@ -19,6 +19,7 @@ const tradingRoutes = require('./routes/trading');
 const subscriptionRoutes = require('./routes/subscription');
 const adminRoutes = require('./routes/admin');
 const { router: derivRoutes } = require('./routes/deriv');
+const derivConfigRoutes = require('./routes/deriv-config');
 const aiAnalysisRoutes = require('./routes/ai-analysis');
 const autoTradingRoutes = require('./routes/auto-trading');
 const aiRoutes = require('./routes/ai');
@@ -31,7 +32,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrcAttr: ["'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "wss:", "ws:"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+}));
 
 // Stripe webhook must be raw body BEFORE json parser
 app.use('/api/v1/subscription/webhook', express.raw({ type: 'application/json' }));
@@ -48,6 +64,9 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Servir arquivos estáticos do frontend
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Aplicar rate limiting geral
 app.use('/api', generalLimiter);
@@ -75,6 +94,7 @@ app.use('/api/v1/trading', authMiddleware, tradingRoutes);
 app.use('/api/v1/subscription', authMiddleware, subscriptionRoutes);
 app.use('/api/v1/admin', authMiddleware, adminRoutes);
 app.use('/api/v1/deriv', authMiddleware, derivRoutes);
+app.use('/api/v1/deriv-config', authMiddleware, derivConfigRoutes);
 app.use('/api/v1/ai', aiAnalysisRoutes);
 app.use('/api/v1/ai-trader', authMiddleware, aiRoutes);
 app.use('/api/v1/auto-trading', authMiddleware, autoTradingRoutes);

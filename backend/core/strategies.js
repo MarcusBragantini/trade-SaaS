@@ -29,7 +29,7 @@ class TradingStrategies {
     } = config;
 
     // Simular dados de cores (vermelho = 0, verde = 1)
-    const colors = this.generateColorSequence(marketData.length);
+    const colors = TradingStrategies.generateColorSequence(marketData.length);
     
     // Verificar sequência recente
     const recentSequence = colors.slice(-sequenceLength);
@@ -81,7 +81,7 @@ class TradingStrategies {
 
     // Calcular MACD
     const prices = marketData.map(d => d.close);
-    const macd = this.calculateMACD(prices, fastPeriod, slowPeriod, signalPeriod);
+    const macd = TradingStrategies.calculateMACD(prices, fastPeriod, slowPeriod, signalPeriod);
     
     if (macd.length < 2) {
       return { action: 'HOLD', confidence: 0.5, reason: 'MACD: Dados insuficientes' };
@@ -141,7 +141,7 @@ class TradingStrategies {
     } = config;
 
     const prices = marketData.map(d => d.close);
-    const bb = this.calculateBollingerBands(prices, period, stdDev);
+    const bb = TradingStrategies.calculateBollingerBands(prices, period, stdDev);
     
     if (bb.length < 2) {
       return { action: 'HOLD', confidence: 0.5, reason: 'Bollinger: Dados insuficientes' };
@@ -204,7 +204,7 @@ class TradingStrategies {
     } = config;
 
     const prices = marketData.map(d => d.close);
-    const rsi = this.calculateRSI(prices, period);
+    const rsi = TradingStrategies.calculateRSI(prices, period);
     
     if (rsi.length < 2) {
       return { action: 'HOLD', confidence: 0.5, reason: 'RSI: Dados insuficientes' };
@@ -265,7 +265,7 @@ class TradingStrategies {
     } = config;
 
     const prices = marketData.map(d => d.close);
-    const stochastic = this.calculateStochastic(prices, kPeriod, dPeriod);
+    const stochastic = TradingStrategies.calculateStochastic(prices, kPeriod, dPeriod);
     
     if (stochastic.length < 2) {
       return { action: 'HOLD', confidence: 0.5, reason: 'Stochastic: Dados insuficientes' };
@@ -313,7 +313,7 @@ class TradingStrategies {
     } = config;
 
     const prices = marketData.map(d => d.close);
-    const williams = this.calculateWilliams(prices, period);
+    const williams = TradingStrategies.calculateWilliams(prices, period);
     
     if (williams.length < 2) {
       return { action: 'HOLD', confidence: 0.5, reason: 'Williams: Dados insuficientes' };
@@ -396,7 +396,7 @@ class TradingStrategies {
     const { period = 20, threshold = 0.02 } = config;
     
     const prices = marketData.map(d => d.close);
-    const sma = this.calculateSMA(prices, period);
+    const sma = TradingStrategies.calculateSMA(prices, period);
     
     if (sma.length === 0) {
       return { action: 'HOLD', confidence: 0.5, reason: 'Mean Reversion: Dados insuficientes' };
@@ -435,7 +435,7 @@ class TradingStrategies {
   }
 
   // Métodos auxiliares para cálculos técnicos
-  generateColorSequence(length) {
+  static generateColorSequence(length) {
     // Simular sequência de cores para MHI
     const colors = [];
     for (let i = 0; i < length; i++) {
@@ -444,9 +444,9 @@ class TradingStrategies {
     return colors;
   }
 
-  calculateMACD(prices, fastPeriod, slowPeriod, signalPeriod) {
-    const emaFast = this.calculateEMA(prices, fastPeriod);
-    const emaSlow = this.calculateEMA(prices, slowPeriod);
+  static calculateMACD(prices, fastPeriod, slowPeriod, signalPeriod) {
+    const emaFast = TradingStrategies.calculateEMA(prices, fastPeriod);
+    const emaSlow = TradingStrategies.calculateEMA(prices, slowPeriod);
     const macdLine = [];
     
     for (let i = 0; i < emaFast.length; i++) {
@@ -455,7 +455,7 @@ class TradingStrategies {
       }
     }
     
-    const signalLine = this.calculateEMA(macdLine, signalPeriod);
+    const signalLine = TradingStrategies.calculateEMA(macdLine, signalPeriod);
     const histogram = [];
     
     for (let i = 0; i < macdLine.length; i++) {
@@ -471,8 +471,8 @@ class TradingStrategies {
     }));
   }
 
-  calculateBollingerBands(prices, period, stdDev) {
-    const sma = this.calculateSMA(prices, period);
+  static calculateBollingerBands(prices, period, stdDev) {
+    const sma = TradingStrategies.calculateSMA(prices, period);
     const bands = [];
     
     for (let i = period - 1; i < prices.length; i++) {
@@ -491,7 +491,7 @@ class TradingStrategies {
     return bands;
   }
 
-  calculateRSI(prices, period) {
+  static calculateRSI(prices, period) {
     const gains = [];
     const losses = [];
     
@@ -501,8 +501,8 @@ class TradingStrategies {
       losses.push(change < 0 ? Math.abs(change) : 0);
     }
     
-    const avgGains = this.calculateSMA(gains, period);
-    const avgLosses = this.calculateSMA(losses, period);
+    const avgGains = TradingStrategies.calculateSMA(gains, period);
+    const avgLosses = TradingStrategies.calculateSMA(losses, period);
     const rsi = [];
     
     for (let i = 0; i < avgGains.length; i++) {
@@ -517,7 +517,7 @@ class TradingStrategies {
     return rsi;
   }
 
-  calculateSMA(prices, period) {
+  static calculateSMA(prices, period) {
     const sma = [];
     for (let i = period - 1; i < prices.length; i++) {
       const slice = prices.slice(i - period + 1, i + 1);
@@ -527,7 +527,7 @@ class TradingStrategies {
     return sma;
   }
 
-  calculateEMA(prices, period) {
+  static calculateEMA(prices, period) {
     const ema = [];
     const multiplier = 2 / (period + 1);
     
@@ -545,7 +545,7 @@ class TradingStrategies {
     return ema;
   }
 
-  calculateStochastic(prices, kPeriod, dPeriod) {
+  static calculateStochastic(prices, kPeriod, dPeriod) {
     const stochastic = [];
     
     for (let i = kPeriod - 1; i < prices.length; i++) {
@@ -568,7 +568,7 @@ class TradingStrategies {
     return stochastic.filter(item => item.d !== undefined);
   }
 
-  calculateWilliams(prices, period) {
+  static calculateWilliams(prices, period) {
     const williams = [];
     
     for (let i = period - 1; i < prices.length; i++) {
