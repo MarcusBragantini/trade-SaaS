@@ -1,5 +1,7 @@
 const axios = require('axios');
 const TradingStrategies = require('./strategies');
+const MarketDataFetcher = require('./marketData');
+const TechnicalAnalysis = require('./technicalAnalysis');
 
 class AITrader {
   constructor() {
@@ -19,6 +21,20 @@ class AITrader {
     this.riskManager = new RiskManager();
     this.strategyEngine = new StrategyEngine();
     this.tradingStrategies = new TradingStrategies();
+    this.marketDataFetcher = new MarketDataFetcher();
+    this.technicalAnalysis = new TechnicalAnalysis();
+    
+    // Sistema de análise em tempo real
+    this.realtimeAnalysis = {
+      isActive: false,
+      interval: null,
+      lastAnalysis: null,
+      currentMarketSentiment: 'NEUTRAL',
+      activeSignals: [],
+      marketTrend: 'SIDEWAYS',
+      analysisCount: 0,
+      subscribers: new Set()
+    };
   }
 
   /**
@@ -619,6 +635,186 @@ class AITrader {
       totalSignals: this.currentSignals.size,
       performance: this.performanceMetrics,
       lastUpdate: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Inicia análise em tempo real
+   */
+  startRealtimeAnalysis(intervalSeconds = 10, symbols = ['R_10', 'R_25', 'R_50']) {
+    if (this.realtimeAnalysis.isActive) {
+      console.log('⚠️ Análise em tempo real já está ativa');
+      return;
+    }
+
+    this.realtimeAnalysis.isActive = true;
+    this.realtimeAnalysis.symbols = symbols;
+    this.realtimeAnalysis.intervalSeconds = intervalSeconds;
+
+    console.log(`🚀 Iniciando análise em tempo real (${intervalSeconds}s) para: ${symbols.join(', ')}`);
+
+    this.realtimeAnalysis.interval = setInterval(async () => {
+      await this.performRealtimeAnalysis();
+    }, intervalSeconds * 1000);
+
+    // Executar primeira análise imediatamente
+    this.performRealtimeAnalysis();
+  }
+
+  /**
+   * Para análise em tempo real
+   */
+  stopRealtimeAnalysis() {
+    if (!this.realtimeAnalysis.isActive) {
+      console.log('⚠️ Análise em tempo real não está ativa');
+      return;
+    }
+
+    if (this.realtimeAnalysis.interval) {
+      clearInterval(this.realtimeAnalysis.interval);
+      this.realtimeAnalysis.interval = null;
+    }
+
+    this.realtimeAnalysis.isActive = false;
+    console.log('🛑 Análise em tempo real parada');
+  }
+
+  /**
+   * Executa análise em tempo real
+   */
+  async performRealtimeAnalysis() {
+    try {
+      this.realtimeAnalysis.analysisCount++;
+      const timestamp = new Date().toISOString();
+      
+      console.log(`🔍 [${timestamp}] Análise técnica em tempo real #${this.realtimeAnalysis.analysisCount}`);
+
+      const analysisResults = [];
+
+      for (const symbol of this.realtimeAnalysis.symbols) {
+        try {
+          // Buscar dados históricos do mercado
+          const marketData = await this.marketDataFetcher.getHistoricalData(symbol, '1m', 100);
+          
+          if (marketData && marketData.length >= 20) {
+            // Realizar análise técnica completa
+            const technicalAnalysis = await this.technicalAnalysis.performCompleteAnalysis(symbol, marketData);
+            
+            analysisResults.push({
+              symbol,
+              action: technicalAnalysis.recommendation,
+              confidence: technicalAnalysis.confidence,
+              riskLevel: technicalAnalysis.riskLevel,
+              timestamp,
+              indicators: {
+                rsi: technicalAnalysis.indicators.rsi,
+                macd: technicalAnalysis.indicators.macd,
+                bollinger: technicalAnalysis.indicators.bollinger,
+                mhi: technicalAnalysis.indicators.mhi,
+                stochastic: technicalAnalysis.indicators.stochastic,
+                williams: technicalAnalysis.indicators.williams
+              }
+            });
+
+            // Log apenas sinais importantes (confiança > 60%)
+            if (technicalAnalysis.confidence > 60) {
+              console.log(`🎯 ${symbol}: ${technicalAnalysis.recommendation} (${technicalAnalysis.confidence}%) - Risco: ${technicalAnalysis.riskLevel}`);
+              console.log(`📊 RSI: ${technicalAnalysis.indicators.rsi?.value?.toFixed(1) || 'N/A'} | MACD: ${technicalAnalysis.indicators.macd?.trend || 'N/A'} | MHI: ${technicalAnalysis.indicators.mhi?.value?.toFixed(2) || 'N/A'}`);
+            }
+          } else {
+            console.log(`⚠️ Dados insuficientes para análise técnica de ${symbol}`);
+          }
+
+        } catch (error) {
+          console.error(`❌ Erro na análise técnica de ${symbol}:`, error.message);
+        }
+      }
+
+      // Atualizar estado da análise
+      this.realtimeAnalysis.lastAnalysis = {
+        timestamp,
+        results: analysisResults,
+        marketSentiment: this.calculateMarketSentiment(analysisResults),
+        trend: this.calculateMarketTrend(analysisResults),
+        type: 'technical_analysis'
+      };
+
+      // Notificar subscribers
+      this.notifySubscribers(this.realtimeAnalysis.lastAnalysis);
+
+    } catch (error) {
+      console.error('❌ Erro na análise técnica em tempo real:', error);
+    }
+  }
+
+  /**
+   * Calcula sentimento geral do mercado
+   */
+  calculateMarketSentiment(analysisResults) {
+    const buySignals = analysisResults.filter(r => r.action === 'BUY').length;
+    const sellSignals = analysisResults.filter(r => r.action === 'SELL').length;
+    const totalSignals = analysisResults.length;
+
+    if (totalSignals === 0) return 'NEUTRAL';
+
+    const buyRatio = buySignals / totalSignals;
+    
+    if (buyRatio > 0.6) return 'BULLISH';
+    if (buyRatio < 0.4) return 'BEARISH';
+    return 'NEUTRAL';
+  }
+
+  /**
+   * Calcula tendência geral do mercado
+   */
+  calculateMarketTrend(analysisResults) {
+    const avgConfidence = analysisResults.reduce((sum, r) => sum + r.confidence, 0) / analysisResults.length;
+    
+    if (avgConfidence > 0.7) return 'STRONG';
+    if (avgConfidence > 0.5) return 'MODERATE';
+    return 'WEAK';
+  }
+
+  /**
+   * Adiciona subscriber para notificações em tempo real
+   */
+  subscribeToRealtimeAnalysis(callback) {
+    this.realtimeAnalysis.subscribers.add(callback);
+    console.log(`📡 Subscriber adicionado. Total: ${this.realtimeAnalysis.subscribers.size}`);
+  }
+
+  /**
+   * Remove subscriber
+   */
+  unsubscribeFromRealtimeAnalysis(callback) {
+    this.realtimeAnalysis.subscribers.delete(callback);
+    console.log(`📡 Subscriber removido. Total: ${this.realtimeAnalysis.subscribers.size}`);
+  }
+
+  /**
+   * Notifica todos os subscribers
+   */
+  notifySubscribers(analysisData) {
+    this.realtimeAnalysis.subscribers.forEach(callback => {
+      try {
+        callback(analysisData);
+      } catch (error) {
+        console.error('❌ Erro ao notificar subscriber:', error);
+      }
+    });
+  }
+
+  /**
+   * Obtém status da análise em tempo real
+   */
+  getRealtimeAnalysisStatus() {
+    return {
+      isActive: this.realtimeAnalysis.isActive,
+      lastAnalysis: this.realtimeAnalysis.lastAnalysis,
+      analysisCount: this.realtimeAnalysis.analysisCount,
+      subscribers: this.realtimeAnalysis.subscribers.size,
+      symbols: this.realtimeAnalysis.symbols || [],
+      interval: this.realtimeAnalysis.intervalSeconds || 0
     };
   }
 }

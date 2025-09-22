@@ -23,17 +23,30 @@ router.put('/config', authMiddleware, async (req, res) => {
             });
         }
 
-        if (accountType === 'demo' && (!demoToken || !demoAppId)) {
+        // Verificar se os tokens existem no banco para o tipo de conta selecionado
+        const checkSql = `
+            SELECT 
+                deriv_demo_token, 
+                deriv_demo_app_id, 
+                deriv_real_token, 
+                deriv_real_app_id 
+            FROM users 
+            WHERE id = ?
+        `;
+        const checkRows = await query(checkSql, [userId]);
+        const userTokens = checkRows[0];
+
+        if (accountType === 'demo' && (!userTokens.deriv_demo_token || !userTokens.deriv_demo_app_id)) {
             return res.status(400).json({
                 status: 'error',
-                message: 'Token e App ID demo são obrigatórios'
+                message: 'Token e App ID demo não configurados. Configure primeiro em /deriv-tokens.html'
             });
         }
 
-        if (accountType === 'real' && (!realToken || !realAppId)) {
+        if (accountType === 'real' && (!userTokens.deriv_real_token || !userTokens.deriv_real_app_id)) {
             return res.status(400).json({
                 status: 'error',
-                message: 'Token e App ID real são obrigatórios'
+                message: 'Token e App ID real não configurados. Configure primeiro em /deriv-tokens.html'
             });
         }
 

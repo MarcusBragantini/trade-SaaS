@@ -21,3 +21,4 @@ MODIFY COLUMN deriv_demo_app_id VARCHAR(50) NULL COMMENT 'App ID da conta demo d
 MODIFY COLUMN deriv_real_token VARCHAR(255) NULL COMMENT 'Token da conta real da Deriv',
 MODIFY COLUMN deriv_real_app_id VARCHAR(50) NULL COMMENT 'App ID da conta real da Deriv',
 MODIFY COLUMN deriv_account_type ENUM('demo', 'real') DEFAULT 'demo' COMMENT 'Tipo de conta Deriv ativa';
+

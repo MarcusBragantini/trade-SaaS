@@ -97,6 +97,177 @@
             background: #45a049;
         }
 
+        /* Sistema de Notificações Profissionais */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+            width: calc(100vw - 40px);
+        }
+
+        .notification {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            border-left: 4px solid;
+            min-height: 60px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left-color: #4CAF50;
+            background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+        }
+
+        .notification.error {
+            border-left-color: #f44336;
+            background: linear-gradient(135deg, #fff8f8 0%, #ffe8e8 100%);
+        }
+
+        .notification.warning {
+            border-left-color: #ff9800;
+            background: linear-gradient(135deg, #fffaf0 0%, #fff3e0 100%);
+        }
+
+        .notification.info {
+            border-left-color: #2196F3;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e3f2fd 100%);
+        }
+
+        .notification-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            min-width: 24px;
+        }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin: 0 0 4px 0;
+            color: #333;
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+
+        .notification-message {
+            margin: 0;
+            color: #666;
+            font-size: 13px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+            touch-action: manipulation;
+        }
+
+        .notification-close:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #666;
+        }
+
+        /* Responsividade para Notificações */
+        @media (max-width: 768px) {
+            .notification-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                width: auto;
+            }
+
+            .notification {
+                padding: 12px 16px;
+                gap: 10px;
+                min-height: 50px;
+            }
+
+            .notification-icon {
+                font-size: 18px;
+                min-width: 20px;
+            }
+
+            .notification-title {
+                font-size: 13px;
+            }
+
+            .notification-message {
+                font-size: 12px;
+            }
+
+            .notification-close {
+                width: 20px;
+                height: 20px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .notification-container {
+                top: 5px;
+                right: 5px;
+                left: 5px;
+            }
+
+            .notification {
+                padding: 10px 12px;
+                gap: 8px;
+                min-height: 45px;
+            }
+
+            .notification-icon {
+                font-size: 16px;
+                min-width: 18px;
+            }
+
+            .notification-title {
+                font-size: 12px;
+                margin-bottom: 2px;
+            }
+
+            .notification-message {
+                font-size: 11px;
+                line-height: 1.3;
+            }
+
+            .notification-close {
+                width: 18px;
+                height: 18px;
+                font-size: 14px;
+            }
+        }
+
         .deriv-connected {
             color: #00ff88;
         }
@@ -199,6 +370,89 @@
         .btn-test {
             background: #4488ff;
             color: white;
+        }
+
+        .btn-config {
+            background: #9c27b0;
+            color: white;
+        }
+
+        .btn-config:hover {
+            background: #7b1fa2;
+        }
+
+        /* Configurações do Cliente */
+        .config-panel {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+
+        .config-panel h3 {
+            color: #00ff88;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .config-sections {
+            display: grid;
+            gap: 20px;
+        }
+
+        .config-section {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #555;
+        }
+
+        .config-section h4 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .config-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .config-actions .btn {
+            min-width: 120px;
+        }
+
+        #trading-pairs {
+            min-height: 100px;
+        }
+
+        #trading-pairs option {
+            padding: 5px;
+        }
+
+        /* Responsividade para Configurações */
+        @media (max-width: 768px) {
+            .config-sections {
+                gap: 15px;
+            }
+
+            .config-section {
+                padding: 12px;
+            }
+
+            .config-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .config-actions .btn {
+                width: 100%;
+                max-width: 200px;
+            }
         }
 
         .btn-group {
@@ -317,6 +571,9 @@
     </style>
 </head>
 <body>
+    <!-- Container de Notificações -->
+    <div id="notification-container" class="notification-container"></div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -381,6 +638,7 @@
                         <button id="start-btn" class="btn btn-start">🚀 INICIAR</button>
                         <button id="stop-btn" class="btn btn-stop" disabled>⏹️ PARAR</button>
                         <button id="test-trade-btn" class="btn btn-test">🧪 TESTE</button>
+                        <button id="config-btn" class="btn btn-config">⚙️ CONFIG</button>
                     </div>
                 </div>
             </div>
@@ -398,11 +656,147 @@
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="profit">$0.00</div>
-                <div class="stat-label">Lucro</div>
+                <div class="stat-label">Lucro Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="daily-profit">$0.00</div>
+                <div class="stat-label">Lucro Diário</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="active-trades">0</div>
                 <div class="stat-label">Ativos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="martingale-level">0</div>
+                <div class="stat-label">Martingale</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="queue-size">0</div>
+                <div class="stat-label">Fila</div>
+            </div>
+        </div>
+
+        <!-- Configurações do Cliente -->
+        <div id="config-panel" class="config-panel" style="display: none;">
+            <h3>⚙️ Configurações do Cliente</h3>
+            
+            <div class="config-sections">
+                <!-- Seção de Risk Management -->
+                <div class="config-section">
+                    <h4>🛡️ Gestão de Risco</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="stop-win">Stop Win ($):</label>
+                            <input type="number" id="stop-win" value="50" min="0" max="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="stop-loss">Stop Loss ($):</label>
+                            <input type="number" id="stop-loss" value="100" min="0" max="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="risk-per-trade">Risco por Trade (%):</label>
+                            <input type="number" id="risk-per-trade" value="1" min="0.1" max="10" step="0.1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Martingale -->
+                <div class="config-section">
+                    <h4>📈 Martingale</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="martingale-enabled"> Habilitar Martingale
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="martingale-multiplier">Multiplicador:</label>
+                            <input type="number" id="martingale-multiplier" value="2.0" min="1.1" max="5.0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="max-martingale-levels">Máx. Níveis:</label>
+                            <input type="number" id="max-martingale-levels" value="3" min="1" max="10">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Trading -->
+                <div class="config-section">
+                    <h4>💹 Trading</h4>
+                    <div class="form-row">
+                     <div class="form-group">
+                         <label for="trade-amount">Valor do Trade ($):</label>
+                         <input type="number" id="trade-amount" value="5" min="1" max="1000">
+                     </div>
+                     <div class="form-group">
+                         <label for="ticket-quantity">Quantidade de Tickets:</label>
+                         <input type="number" id="ticket-quantity" value="10" min="1" max="100">
+                     </div>
+                        <div class="form-group">
+                            <label for="max-daily-trades">Máx. Trades/Dia:</label>
+                            <input type="number" id="max-daily-trades" value="50" min="1" max="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="trading-pairs">Pares Ativos:</label>
+                            <select id="trading-pairs" multiple>
+                                <option value="R_10" selected>Rise/Fall 10</option>
+                                <option value="R_25" selected>Rise/Fall 25</option>
+                                <option value="R_50" selected>Rise/Fall 50</option>
+                                <option value="R_75">Rise/Fall 75</option>
+                                <option value="R_100">Rise/Fall 100</option>
+                                <option value="EURUSD">EUR/USD</option>
+                                <option value="GBPUSD">GBP/USD</option>
+                                <option value="BTCUSD">BTC/USD</option>
+                                <option value="ETHUSD">ETH/USD</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de IA -->
+                <div class="config-section">
+                    <h4>🤖 Inteligência Artificial</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ai-confidence-threshold">Limiar de Confiança (%):</label>
+                            <input type="number" id="ai-confidence-threshold" value="60" min="10" max="100">
+                        </div>
+                     <div class="form-group">
+                         <label for="ai-analysis-interval">Intervalo de Análise (s):</label>
+                         <input type="number" id="ai-analysis-interval" value="10" min="5" max="60">
+                     </div>
+                     <div class="form-group">
+                         <label for="trade-cooldown">Cooldown entre Trades (s):</label>
+                         <input type="number" id="trade-cooldown" value="5" min="1" max="30">
+                     </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="auto-trading-enabled"> Trading Automático
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Horários -->
+                <div class="config-section">
+                    <h4>🕐 Horários de Trading</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="trading-hours-start">Início:</label>
+                            <input type="time" id="trading-hours-start" value="00:00">
+                        </div>
+                        <div class="form-group">
+                            <label for="trading-hours-end">Fim:</label>
+                            <input type="time" id="trading-hours-end" value="23:59">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-actions">
+                <button id="save-config-btn" class="btn btn-success">💾 Salvar</button>
+                <button id="reset-config-btn" class="btn btn-warning">🔄 Resetar</button>
+                <button id="close-config-btn" class="btn btn-secondary">❌ Fechar</button>
             </div>
         </div>
 
@@ -443,14 +837,59 @@
                 this.apiBase = 'http://localhost:5001/api/v1';
                 this.derivConnected = false;
                 this.realBalance = 0;
-                this.productionMode = false; // Modo debug - todos os logs
+                this.productionMode = true; // Modo produção - logs importantes apenas
+                this.realtimeAnalysisActive = false;
+                this.lastAnalysisTime = null;
+                this.activeTrades = new Map(); // Monitorar trades ativos
+                this.dailyStats = {
+                    trades: 0,
+                    profit: 0,
+                    startTime: new Date()
+                };
+                this.martingaleLevel = 0; // Nível atual do martingale
+                this.consecutiveLosses = 0; // Perdas consecutivas
+                this.config = {}; // Configurações do cliente
+                this.tradeQueue = []; // Fila de trades pendentes
+                this.isExecutingTrade = false; // Flag para evitar execuções simultâneas
+                this.lastTradeTime = 0; // Timestamp do último trade
+                this.tradeCooldown = 5000; // 5 segundos entre trades
             }
 
             async init() {
                 this.log('⚡ Inicializando Zeus Auto Trader...', 'info');
+                await this.loadClientConfig();
                 this.setupEvents();
                 this.updateUI();
                 this.log('✅ Sistema inicializado - aguardando verificação Deriv...', 'success');
+            }
+
+            async loadClientConfig() {
+                try {
+                    const token = this.getAuthToken();
+                    if (!token) {
+                        this.log('⚠️ Token não encontrado para carregar configurações', 'warning');
+                        return;
+                    }
+
+                    const response = await fetch(`${this.apiBase}/client-config/config`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.status === 'success') {
+                            this.config = result.data;
+                            // Aplicar cooldown configurado
+                            this.tradeCooldown = (this.config.tradeCooldown || 5) * 1000; // Converter para ms
+                            this.log('✅ Configurações do cliente carregadas', 'success');
+                        }
+                    }
+                } catch (error) {
+                    this.log(`⚠️ Erro ao carregar configurações: ${error.message}`, 'warning');
+                }
             }
 
             setupEvents() {
@@ -493,6 +932,9 @@
                     }
                 }, 30000);
 
+                // Iniciar análise em tempo real
+                await this.startRealtimeAnalysis();
+
                 // Primeira análise
                 this.analyzeAndTrade();
             }
@@ -511,6 +953,9 @@
                     this.balanceInterval = null;
                 }
 
+                // Parar análise em tempo real
+                this.stopRealtimeAnalysis();
+
                 this.log('⏹️ Trading automático parado', 'error');
             }
 
@@ -518,7 +963,7 @@
                 if (!this.isRunning) return;
 
                 try {
-                    // Análise da IA
+                    // Análise técnica da IA
                     const signal = await this.generateSignal();
                     
                     // Validar sinal antes de processar
@@ -528,16 +973,25 @@
                     }
                     
                     // Log do sinal para debug
-                    this.log(`🔍 Sinal: ${signal.action} ${signal.symbol} (${(signal.confidence * 100).toFixed(0)}%)`, 'info');
+                    this.log(`🔍 Sinal: ${signal.action} ${signal.symbol} (${signal.confidence}%)`, 'info');
 
-                    // Verificar se deve executar trade (reduzido para 5% para mais trades)
-                    const shouldTrade = signal.confidence > 0.05 && signal.action !== 'HOLD';
+                    // Verificar se deve executar trade baseado em confiança e risco
+                    const minConfidence = 30; // Mínimo 30% de confiança (reduzido para mais trades)
+                    const shouldTrade = signal.confidence >= minConfidence && signal.action !== 'HOLD';
+                    
+                    // Verificar nível de risco
+                    if (signal.riskLevel === 'HIGH') {
+                        this.log(`⚠️ Risco alto detectado - Trade cancelado: ${signal.action} (${signal.confidence}%)`, 'warning');
+                        return;
+                    }
                     
                     if (shouldTrade) {
-                        this.log(`✅ Executando trade: ${signal.action} (${(signal.confidence * 100).toFixed(0)}%)`, 'info');
-                        await this.executeTrade(signal);
+                        this.log(`✅ Adicionando trade à fila: ${signal.action} (${signal.confidence}%) - Risco: ${signal.riskLevel || 'MEDIUM'}`, 'info');
+                        this.addTradeToQueue(signal);
                     } else {
-                        this.log(`⏸️ Trade não executado: ${signal.action} (${(signal.confidence * 100).toFixed(0)}%) - ${signal.action === 'HOLD' ? 'HOLD' : 'Confiança baixa'}`, 'info');
+                        const reason = signal.action === 'HOLD' ? 'HOLD' : 
+                                     signal.confidence < minConfidence ? `Confiança baixa (${signal.confidence}% < ${minConfidence}%)` : 'Outros motivos';
+                        this.log(`⏸️ Trade não executado: ${signal.action} (${signal.confidence}%) - ${reason}`, 'info');
                     }
                 } catch (error) {
                     this.log(`❌ Erro na análise: ${error.message}`, 'error');
@@ -547,66 +1001,45 @@
             async generateSignal() {
                 const pair = document.getElementById('pair').value;
                 
-                // Mapear pares sintéticos para nomes que a IA reconheça
-                const pairMapping = {
-                    'R_10': 'RISE10',
-                    'R_25': 'RISE25', 
-                    'R_50': 'RISE50',
-                    'R_75': 'RISE75',
-                    'R_100': 'RISE100'
-                };
-                
-                const analysisSymbol = pairMapping[pair] || pair;
-                
                 try {
-                    // Usar IA real para análise
+                    // Usar análise técnica real
                     const token = this.getAuthToken();
                     if (!token) {
                         return this.generateFallbackSignal(pair);
                     }
 
-                    const response = await fetch(`${this.apiBase}/ai-trader/analyze`, {
-                        method: 'POST',
+                    // Buscar análise técnica em tempo real
+                    const response = await fetch(`${this.apiBase}/realtime-analysis/status`, {
+                        method: 'GET',
                         headers: {
-                            'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({
-                            symbol: analysisSymbol,
-                            strategies: ['MHI', 'MACD', 'RSI', 'BOLLINGER']
-                        })
+                        }
                     });
 
                     if (response.ok) {
                         const result = await response.json();
-                        this.log(`🤖 Resposta IA: ${JSON.stringify(result)}`, 'info');
                         
-                        if (result.success && result.data) {
-                            // A IA pode retornar dados em result.data.signal ou diretamente em result.data
-                            let signal = result.data;
-                            if (result.data.signal) {
-                                signal = result.data.signal;
-                            }
+                        if (result.status === 'success' && result.data && result.data.lastAnalysis && result.data.lastAnalysis.results) {
+                            // Procurar sinal para o par atual
+                            const signalForPair = result.data.lastAnalysis.results.find(s => s.symbol === pair);
                             
-                            // Validar se a IA retornou dados válidos
-                            if (signal && signal.action && signal.confidence !== undefined) {
-                                this.log(`✅ Sinal IA válido: ${signal.action} (${signal.confidence})`, 'info');
-                                return signal;
-                            } else {
-                                this.log(`⚠️ Sinal IA inválido, usando fallback`, 'warning');
-                                return this.generateFallbackSignal(pair);
+                            if (signalForPair && signalForPair.confidence > 20) { // Reduzido para 20% para mais trades
+                                this.log(`🎯 Sinal técnico: ${signalForPair.action} ${pair} (${signalForPair.confidence}%) - Risco: ${signalForPair.riskLevel}`, 'info');
+                                
+                                return {
+                                    action: signalForPair.action,
+                                    confidence: signalForPair.confidence,
+                                    reason: `Análise técnica: RSI, MACD, MHI, Bollinger Bands`,
+                                    riskLevel: signalForPair.riskLevel
+                                };
                             }
-                        } else {
-                            this.log(`⚠️ Resposta IA inválida, usando fallback`, 'warning');
                         }
-                    } else {
-                        this.log(`❌ Erro HTTP IA: ${response.status}`, 'error');
                     }
                     
-                    // Fallback se IA falhar
+                    // Se não há sinal técnico disponível, usar análise simples
                     return this.generateFallbackSignal(pair);
                 } catch (error) {
-                    this.log(`⚠️ Erro na análise IA: ${error.message}`, 'error');
+                    this.log(`⚠️ Erro na análise técnica: ${error.message}`, 'error');
                     return this.generateFallbackSignal(pair);
                 }
             }
@@ -615,21 +1048,36 @@
                 // Análise simples baseada em tendência simulada
                 const actions = ['BUY', 'SELL', 'HOLD'];
                 const action = actions[Math.floor(Math.random() * actions.length)];
-                const confidence = 0.5 + Math.random() * 0.4; // 50-90%
+                const confidence = 0.6 + Math.random() * 0.3; // 60-90% para garantir execução
                 
                 this.log(`🎲 Fallback: ${action} ${pair} (${(confidence * 100).toFixed(0)}%)`, 'info');
                 
                 return {
                     symbol: pair || 'BTCUSD',
                     action: action,
-                    confidence: confidence
+                    confidence: confidence * 100, // Converter para porcentagem
+                    riskLevel: 'MEDIUM'
                 };
             }
 
             async executeTrade(signal) {
-                const amount = parseFloat(document.getElementById('amount').value);
+                // Verificar limites diários
+                if (this.dailyStats.trades >= (this.config.maxDailyTrades || 50)) {
+                    this.log(`⚠️ Limite diário de trades atingido: ${this.dailyStats.trades}/${this.config.maxDailyTrades}`, 'warning');
+                    return;
+                }
+
+                // Verificar horários de trading
+                if (!this.isWithinTradingHours()) {
+                    this.log(`⚠️ Fora do horário de trading: ${this.config.tradingHoursStart} - ${this.config.tradingHoursEnd}`, 'warning');
+                    return;
+                }
+
+                // Calcular valor do trade com martingale
+                const baseAmount = this.config.tradeAmount || parseFloat(document.getElementById('amount').value);
+                const amount = this.calculateTradeAmount(baseAmount);
                 
-                this.log(`🎯 Executando trade: ${signal.action} ${signal.symbol} $${amount}`, 'info');
+                this.log(`🎯 Executando trade: ${signal.action} ${signal.symbol} $${amount} (Martingale: ${this.martingaleLevel})`, 'info');
 
                 let trade;
                 
@@ -642,11 +1090,25 @@
                 }
 
                 if (trade) {
+                    // Adicionar trade ativo para monitoramento
+                    this.activeTrades.set(trade.id, {
+                        ...trade,
+                        startTime: new Date(),
+                        stopWin: this.config.stopWin || 50,
+                        stopLoss: this.config.stopLoss || 100
+                    });
+
                     // Adicionar trade
                     this.trades.unshift(trade);
                     
                     // Atualizar estatísticas
                     this.updateStats(trade);
+                    
+                    // Verificar stop win/stop loss
+                    this.checkStopWinLoss();
+                    
+                    // Atualizar martingale
+                    this.updateMartingale(trade);
                     
                     // Atualizar saldo real se for trade real
                     if (trade.realTrade && this.derivConnected) {
@@ -660,6 +1122,142 @@
                     // Log do trade com estratégias
                     const strategies = signal.strategiesUsed || ['IA'];
                     this.logTrade(signal, trade, strategies);
+                }
+            }
+
+            // Adicionar trade à fila
+            addTradeToQueue(signal) {
+                // Verificar se já existe um trade similar na fila
+                const existingTrade = this.tradeQueue.find(t => t.symbol === signal.symbol && t.action === signal.action);
+                if (existingTrade) {
+                    this.log(`⚠️ Trade similar já na fila: ${signal.action} ${signal.symbol}`, 'warning');
+                    return;
+                }
+
+                this.tradeQueue.push({
+                    ...signal,
+                    timestamp: Date.now(),
+                    id: `trade_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                });
+
+                this.log(`📋 Trade adicionado à fila (${this.tradeQueue.length} pendentes)`, 'info');
+                
+                // Processar fila se não estiver executando
+                if (!this.isExecutingTrade) {
+                    this.processTradeQueue();
+                }
+            }
+
+            // Processar fila de trades
+            async processTradeQueue() {
+                if (this.isExecutingTrade || this.tradeQueue.length === 0) {
+                    return;
+                }
+
+                // Verificar cooldown
+                const now = Date.now();
+                if (now - this.lastTradeTime < this.tradeCooldown) {
+                    const remainingTime = Math.ceil((this.tradeCooldown - (now - this.lastTradeTime)) / 1000);
+                    this.log(`⏳ Aguardando cooldown: ${remainingTime}s restantes`, 'info');
+                    setTimeout(() => this.processTradeQueue(), this.tradeCooldown - (now - this.lastTradeTime));
+                    return;
+                }
+
+                this.isExecutingTrade = true;
+                const trade = this.tradeQueue.shift(); // Remove o primeiro da fila
+
+                try {
+                    this.log(`🎯 Processando trade da fila: ${trade.action} ${trade.symbol}`, 'info');
+                    await this.executeTrade(trade);
+                } catch (error) {
+                    this.log(`❌ Erro ao executar trade da fila: ${error.message}`, 'error');
+                } finally {
+                    this.isExecutingTrade = false;
+                    this.lastTradeTime = Date.now();
+                    
+                    // Processar próximo trade da fila após um delay
+                    setTimeout(() => this.processTradeQueue(), 2000);
+                }
+            }
+
+            // Verificar se está dentro do horário de trading
+            isWithinTradingHours() {
+                if (!this.config.tradingHoursStart || !this.config.tradingHoursEnd) {
+                    return true; // Se não configurado, permitir sempre
+                }
+
+                const now = new Date();
+                const currentTime = now.getHours() * 60 + now.getMinutes();
+                
+                const [startHour, startMin] = this.config.tradingHoursStart.split(':').map(Number);
+                const [endHour, endMin] = this.config.tradingHoursEnd.split(':').map(Number);
+                
+                const startTime = startHour * 60 + startMin;
+                const endTime = endHour * 60 + endMin;
+                
+                return currentTime >= startTime && currentTime <= endTime;
+            }
+
+            // Calcular valor do trade com martingale
+            calculateTradeAmount(baseAmount) {
+                if (!this.config.martingaleEnabled || this.martingaleLevel === 0) {
+                    return baseAmount;
+                }
+
+                const multiplier = Math.pow(this.config.martingaleMultiplier || 2.0, this.martingaleLevel);
+                return baseAmount * multiplier;
+            }
+
+            // Verificar stop win e stop loss
+            checkStopWinLoss() {
+                const currentProfit = this.dailyStats.profit;
+                const stopWin = this.config.stopWin || 50;
+                const stopLoss = this.config.stopLoss || 100;
+
+                if (currentProfit >= stopWin) {
+                    this.log(`🎯 STOP WIN atingido: $${currentProfit} >= $${stopWin}`, 'success');
+                    this.stop();
+                    return true;
+                }
+
+                if (currentProfit <= -stopLoss) {
+                    this.log(`🛑 STOP LOSS atingido: $${currentProfit} <= -$${stopLoss}`, 'error');
+                    this.stop();
+                    return true;
+                }
+
+                return false;
+            }
+
+            // Atualizar martingale baseado no resultado do trade
+            updateMartingale(trade) {
+                if (!this.config.martingaleEnabled) {
+                    this.martingaleLevel = 0;
+                    this.consecutiveLosses = 0;
+                    return;
+                }
+
+                if (trade.profit > 0) {
+                    // Trade vencedor - resetar martingale
+                    this.martingaleLevel = 0;
+                    this.consecutiveLosses = 0;
+                    this.log(`✅ Trade vencedor - Martingale resetado`, 'success');
+                } else {
+                    // Trade perdedor - incrementar martingale
+                    this.consecutiveLosses++;
+                    
+                    if (this.consecutiveLosses <= (this.config.maxMartingaleLevels || 3)) {
+                        this.martingaleLevel = this.consecutiveLosses;
+                        this.log(`📈 Martingale nível ${this.martingaleLevel} (Perdas: ${this.consecutiveLosses})`, 'warning');
+                        
+                        // Se há trades na fila, processar após um delay para permitir que o martingale seja aplicado
+                        if (this.tradeQueue.length > 0) {
+                            setTimeout(() => this.processTradeQueue(), 3000);
+                        }
+                    } else {
+                        this.log(`🛑 Máximo de níveis de martingale atingido - Parando trading`, 'error');
+                        this.stop();
+                    }
                 }
             }
 
@@ -757,6 +1355,10 @@
                 this.stats.totalTrades = (this.stats.totalTrades || 0) + 1;
                 this.stats.totalProfit = (this.stats.totalProfit || 0) + (trade.profit || 0);
                 
+                // Atualizar estatísticas diárias
+                this.dailyStats.trades = (this.dailyStats.trades || 0) + 1;
+                this.dailyStats.profit = (this.dailyStats.profit || 0) + (trade.profit || 0);
+                
                 if (trade.isWin) {
                     this.stats.winningTrades = (this.stats.winningTrades || 0) + 1;
                 }
@@ -785,7 +1387,10 @@
                 document.getElementById('total-trades').textContent = this.stats.totalTrades || 0;
                 document.getElementById('win-rate').textContent = `${(this.stats.winRate || 0).toFixed(1)}%`;
                 document.getElementById('profit').textContent = `$${(this.stats.totalProfit || 0).toFixed(2)}`;
-                document.getElementById('active-trades').textContent = this.stats.activeTrades || 0;
+                document.getElementById('daily-profit').textContent = `$${(this.dailyStats.profit || 0).toFixed(2)}`;
+                document.getElementById('active-trades').textContent = this.activeTrades.size || 0;
+                document.getElementById('martingale-level').textContent = this.martingaleLevel || 0;
+                document.getElementById('queue-size').textContent = this.tradeQueue.length || 0;
                 
                 // Atualizar saldo baseado na conexão Deriv
                 if (this.derivConnected && this.realBalance > 0) {
@@ -927,9 +1532,19 @@
             log(message, type = 'info', forceShow = false) {
                 // Em modo produção, só mostra logs importantes
                 if (this.productionMode && !forceShow) {
-                    const importantLogs = ['✅ Trade executado:', '💰 Saldo Deriv atualizado:', '🚀 Trading automático iniciado', '⏹️ Trading automático parado'];
-                    const isImportant = importantLogs.some(important => message.includes(important));
-                    if (!isImportant) return;
+                    const criticalKeywords = ['💰', '🎯', '✅', '❌', '🚀', '⏹️', '📊', '🔍', '💸', '📈', '📉'];
+                    const criticalMessages = [
+                        'Trade executado', 'Resultado:', 'Ganhou', 'Perdeu', 
+                        'Saldo Deriv atualizado', 'Trading automático iniciado', 
+                        'Trading automático parado', 'Sinal:', 'Análise IA:',
+                        'BUY', 'SELL', 'HOLD', 'Confiança:', 'Profit:', 'Loss:'
+                    ];
+                    
+                    const isCritical = criticalKeywords.some(keyword => message.includes(keyword)) || 
+                                     criticalMessages.some(critical => message.includes(critical)) ||
+                                     type === 'error' || type === 'success';
+                    
+                    if (!isCritical) return;
                 }
 
                 const container = document.getElementById('logs');
@@ -961,24 +1576,210 @@
                 const message = `${icon} ${signal.action} ${signal.symbol} $${trade.amount} → ${result} $${trade.profit.toFixed(2)}${strategiesText}`;
                 this.log(message, type, true);
             }
+
+            // Métodos para análise em tempo real
+            async startRealtimeAnalysis() {
+                try {
+                    const token = this.getAuthToken();
+                    if (!token) {
+                        this.log('❌ Token não encontrado para análise em tempo real', 'error');
+                        return;
+                    }
+
+                    const response = await fetch(`${this.apiBase}/realtime-analysis/start`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            intervalSeconds: 10,
+                            symbols: ['R_10', 'R_25', 'R_50']
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        this.realtimeAnalysisActive = true;
+                        this.log('🔍 Análise em tempo real iniciada', 'success');
+                        
+                        // Iniciar stream de dados
+                        this.startAnalysisStream();
+                    } else {
+                        this.log('❌ Erro ao iniciar análise em tempo real: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    this.log('❌ Erro ao iniciar análise em tempo real: ' + error.message, 'error');
+                }
+            }
+
+            stopRealtimeAnalysis() {
+                if (!this.realtimeAnalysisActive) return;
+
+                try {
+                    const token = this.getAuthToken();
+                    if (!token) return;
+
+                    fetch(`${this.apiBase}/realtime-analysis/stop`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    this.realtimeAnalysisActive = false;
+                    this.log('🛑 Análise em tempo real parada', 'info');
+                } catch (error) {
+                    console.error('Erro ao parar análise em tempo real:', error);
+                }
+            }
+
+            async startAnalysisStream() {
+                try {
+                    const token = this.getAuthToken();
+                    if (!token) return;
+
+                    const response = await fetch(`${this.apiBase}/realtime-analysis/stream`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Erro ao conectar ao stream');
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    while (this.realtimeAnalysisActive) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.slice(6));
+                                    this.handleRealtimeAnalysis(data);
+                                } catch (e) {
+                                    // Ignorar linhas inválidas
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    if (this.realtimeAnalysisActive) {
+                        this.log('❌ Erro no stream de análise: ' + error.message, 'error');
+                        // Tentar reconectar em 5 segundos
+                        setTimeout(() => {
+                            if (this.realtimeAnalysisActive) {
+                                this.startAnalysisStream();
+                            }
+                        }, 5000);
+                    }
+                }
+            }
+
+            handleRealtimeAnalysis(data) {
+                if (data.type === 'analysis' && data.data) {
+                    const analysis = data.data;
+                    this.lastAnalysisTime = new Date(analysis.timestamp);
+                    
+                    // Log apenas sinais importantes (confiança > 60%)
+                    if (analysis.results && analysis.results.length > 0) {
+                        const strongSignals = analysis.results.filter(r => r.confidence > 60);
+                        if (strongSignals.length > 0) {
+                            strongSignals.forEach(signal => {
+                                this.log(`🎯 ${signal.symbol}: ${signal.action} (${signal.confidence}%) - Risco: ${signal.riskLevel}`, 'info');
+                                
+                                // Mostrar indicadores técnicos
+                                if (signal.indicators) {
+                                    const indicators = signal.indicators;
+                                    this.log(`📊 RSI: ${indicators.rsi?.value?.toFixed(1) || 'N/A'} | MACD: ${indicators.macd?.trend || 'N/A'} | MHI: ${indicators.mhi?.value?.toFixed(2) || 'N/A'}`, 'info');
+                                }
+                            });
+                        }
+                    }
+
+                    // Log sentimento do mercado se mudou significativamente
+                    if (analysis.marketSentiment && analysis.marketSentiment !== 'NEUTRAL') {
+                        this.log(`🌍 Sentimento do mercado: ${analysis.marketSentiment} (${analysis.trend})`, 'info');
+                    }
+                }
+            }
+        }
+
+        // Sistema de Notificações Profissionais
+        function showNotification(message, type = 'info', title = null) {
+            const container = document.getElementById('notification-container');
+            if (!container) return;
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+
+            const titles = {
+                success: 'Sucesso',
+                error: 'Erro',
+                warning: 'Atenção',
+                info: 'Informação'
+            };
+
+            notification.innerHTML = `
+                <div class="notification-icon">${icons[type] || icons.info}</div>
+                <div class="notification-content">
+                    <div class="notification-title">${title || titles[type] || titles.info}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+                <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            container.appendChild(notification);
+
+            // Animar entrada
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            // Auto-remover após 5 segundos
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentElement) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
         }
 
         // Função global para trocar conta
         async function switchAccount() {
             if (!window.titan) {
-                alert('Sistema não inicializado');
+                showNotification('Sistema não inicializado', 'error');
                 return;
             }
             
             try {
                 const token = window.titan.getAuthToken();
                 if (!token) {
-                    alert('Token de autenticação não encontrado');
+                    showNotification('Token de autenticação não encontrado', 'error');
                     return;
                 }
 
                 // Obter configuração atual
-                const response = await fetch('/api/v1/deriv-config/config', {
+                const response = await fetch(`${window.titan.apiBase}/deriv-config/config`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -987,7 +1788,7 @@
 
                 const result = await response.json();
                 if (result.status !== 'success') {
-                    alert('Erro ao obter configuração atual');
+                    showNotification('Erro ao obter configuração atual', 'error');
                     return;
                 }
 
@@ -1001,7 +1802,7 @@
 
                 if (!hasToken) {
                     const newLabel = newType === 'demo' ? 'DEMO' : 'REAL';
-                    alert(`Token da conta ${newLabel} não configurado. Configure primeiro em /deriv-tokens.html`);
+                    showNotification(`Token da conta ${newLabel} não configurado. Configure primeiro em /deriv-tokens.html`, 'warning');
                     return;
                 }
 
@@ -1014,7 +1815,7 @@
                 }
 
                 // Atualizar tipo de conta
-                const updateResponse = await fetch('/api/v1/deriv-config/config', {
+                const updateResponse = await fetch(`${window.titan.apiBase}/deriv-config/config`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -1027,23 +1828,198 @@
 
                 const updateResult = await updateResponse.json();
                 if (updateResult.status === 'success') {
-                    alert(`Conta alterada para ${newLabel}! Recarregando...`);
-                    location.reload();
+                    showNotification(`Conta alterada para ${newLabel}! Recarregando...`, 'success');
+                    setTimeout(() => location.reload(), 2000);
                 } else {
-                    alert('Erro ao alterar conta: ' + updateResult.message);
+                    showNotification('Erro ao alterar conta: ' + updateResult.message, 'error');
                 }
 
             } catch (error) {
                 console.error('Erro ao trocar conta:', error);
-                alert('Erro ao trocar conta: ' + error.message);
+                showNotification('Erro ao trocar conta: ' + error.message, 'error');
             }
         }
+
+        // Sistema de Configurações do Cliente
+        class ClientConfigManager {
+            constructor(titanInstance) {
+                this.config = {};
+                this.isLoading = false;
+                this.titan = titanInstance;
+            }
+
+            async loadConfig() {
+                try {
+                    const token = this.titan.getAuthToken() || localStorage.getItem('authToken');
+                    if (!token) {
+                        console.error('Token não encontrado');
+                        return;
+                    }
+
+                    const response = await fetch(`${this.titan.apiBase}/client-config/config`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        this.config = result.data;
+                        this.populateForm();
+                        console.log('✅ Configurações carregadas:', this.config);
+                    } else {
+                        console.error('Erro ao carregar configurações:', result.message);
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar configurações:', error);
+                }
+            }
+
+            populateForm() {
+                // Risk Management
+                document.getElementById('stop-win').value = this.config.stopWin || 50;
+                document.getElementById('stop-loss').value = this.config.stopLoss || 100;
+                document.getElementById('risk-per-trade').value = this.config.riskPerTrade || 1;
+
+                // Martingale
+                document.getElementById('martingale-enabled').checked = this.config.martingaleEnabled || false;
+                document.getElementById('martingale-multiplier').value = this.config.martingaleMultiplier || 2.0;
+                document.getElementById('max-martingale-levels').value = this.config.maxMartingaleLevels || 3;
+
+                // Trading
+                document.getElementById('trade-amount').value = this.config.tradeAmount || 5;
+                document.getElementById('ticket-quantity').value = this.config.ticketQuantity || 10;
+                document.getElementById('max-daily-trades').value = this.config.maxDailyTrades || 50;
+
+                // Trading Pairs
+                const tradingPairsSelect = document.getElementById('trading-pairs');
+                if (this.config.tradingPairs && Array.isArray(this.config.tradingPairs)) {
+                    Array.from(tradingPairsSelect.options).forEach(option => {
+                        option.selected = this.config.tradingPairs.includes(option.value);
+                    });
+                }
+
+                // IA
+                document.getElementById('ai-confidence-threshold').value = this.config.aiConfidenceThreshold || 60;
+                document.getElementById('ai-analysis-interval').value = this.config.aiAnalysisInterval || 10;
+                document.getElementById('trade-cooldown').value = this.config.tradeCooldown || 5;
+                document.getElementById('auto-trading-enabled').checked = this.config.autoTradingEnabled || false;
+
+                // Horários
+                document.getElementById('trading-hours-start').value = this.config.tradingHoursStart || '00:00';
+                document.getElementById('trading-hours-end').value = this.config.tradingHoursEnd || '23:59';
+            }
+
+            async saveConfig() {
+                if (this.isLoading) return;
+                this.isLoading = true;
+
+                try {
+                    const token = this.titan.getAuthToken() || localStorage.getItem('authToken');
+                    if (!token) {
+                        showNotification('Token não encontrado', 'error');
+                        return;
+                    }
+
+                    // Coletar dados do formulário
+                    const configData = {
+                        stopWin: parseFloat(document.getElementById('stop-win').value),
+                        stopLoss: parseFloat(document.getElementById('stop-loss').value),
+                        riskPerTrade: parseFloat(document.getElementById('risk-per-trade').value),
+                        martingaleEnabled: document.getElementById('martingale-enabled').checked,
+                        martingaleMultiplier: parseFloat(document.getElementById('martingale-multiplier').value),
+                        maxMartingaleLevels: parseInt(document.getElementById('max-martingale-levels').value),
+                        tradeAmount: parseFloat(document.getElementById('trade-amount').value),
+                        ticketQuantity: parseInt(document.getElementById('ticket-quantity').value),
+                        maxDailyTrades: parseInt(document.getElementById('max-daily-trades').value),
+                        tradingPairs: Array.from(document.getElementById('trading-pairs').selectedOptions).map(option => option.value),
+                        aiConfidenceThreshold: parseInt(document.getElementById('ai-confidence-threshold').value),
+                        aiAnalysisInterval: parseInt(document.getElementById('ai-analysis-interval').value),
+                        tradeCooldown: parseInt(document.getElementById('trade-cooldown').value),
+                        autoTradingEnabled: document.getElementById('auto-trading-enabled').checked,
+                        tradingHoursStart: document.getElementById('trading-hours-start').value,
+                        tradingHoursEnd: document.getElementById('trading-hours-end').value
+                    };
+
+                    const response = await fetch(`${this.titan.apiBase}/client-config/config`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(configData)
+                    });
+
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        this.config = configData;
+                        showNotification('Configurações salvas com sucesso!', 'success');
+                        console.log('✅ Configurações salvas:', configData);
+                    } else {
+                        showNotification('Erro ao salvar configurações: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro ao salvar configurações:', error);
+                    showNotification('Erro ao salvar configurações: ' + error.message, 'error');
+                } finally {
+                    this.isLoading = false;
+                }
+            }
+
+            async resetConfig() {
+                if (confirm('Tem certeza que deseja resetar todas as configurações para o padrão?')) {
+                    try {
+                        const token = this.titan.getAuthToken() || localStorage.getItem('authToken');
+                        if (!token) {
+                            showNotification('Token não encontrado', 'error');
+                            return;
+                        }
+
+                        const response = await fetch(`${this.titan.apiBase}/client-config/reset`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const result = await response.json();
+                        if (result.status === 'success') {
+                            showNotification('Configurações resetadas para o padrão!', 'success');
+                            await this.loadConfig();
+                        } else {
+                            showNotification('Erro ao resetar configurações: ' + result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Erro ao resetar configurações:', error);
+                        showNotification('Erro ao resetar configurações: ' + error.message, 'error');
+                    }
+                }
+            }
+
+            toggleConfigPanel() {
+                const panel = document.getElementById('config-panel');
+                if (panel.style.display === 'none') {
+                    panel.style.display = 'block';
+                    this.loadConfig();
+                } else {
+                    panel.style.display = 'none';
+                }
+            }
+        }
+
+        // Instância global do gerenciador de configurações (será inicializada após o titan)
+        let clientConfigManager;
 
         // Inicializar quando carregar
         document.addEventListener('DOMContentLoaded', async () => {
             const titan = new TitanSimple();
             await titan.init();
             window.titan = titan; // Para debug
+            
+            // Inicializar o gerenciador de configurações com a instância do titan
+            clientConfigManager = new ClientConfigManager(titan);
             
             // Função para verificar Deriv quando authManager estiver pronto
             const checkDerivWhenReady = () => {
@@ -1062,6 +2038,35 @@
             
             // Iniciar verificação
             checkDerivWhenReady();
+
+            // Event listeners para configurações
+            document.getElementById('config-btn').addEventListener('click', () => {
+                if (clientConfigManager) {
+                    clientConfigManager.toggleConfigPanel();
+                } else {
+                    console.error('ClientConfigManager não inicializado');
+                }
+            });
+
+            document.getElementById('save-config-btn').addEventListener('click', () => {
+                if (clientConfigManager) {
+                    clientConfigManager.saveConfig();
+                } else {
+                    console.error('ClientConfigManager não inicializado');
+                }
+            });
+
+            document.getElementById('reset-config-btn').addEventListener('click', () => {
+                if (clientConfigManager) {
+                    clientConfigManager.resetConfig();
+                } else {
+                    console.error('ClientConfigManager não inicializado');
+                }
+            });
+
+            document.getElementById('close-config-btn').addEventListener('click', () => {
+                document.getElementById('config-panel').style.display = 'none';
+            });
         });
     </script>
 </body>

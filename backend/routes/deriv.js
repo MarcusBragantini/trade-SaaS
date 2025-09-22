@@ -31,7 +31,8 @@ router.get('/balance', async (req, res) => {
       });
     }
 
-    if (!user.deriv_api_token) {
+    const derivToken = user.getDerivToken();
+    if (!derivToken) {
       // Se não tem token, usar saldo local
       console.log('⚠️ Token Deriv não configurado, usando saldo local');
       const localBalance = {
@@ -50,21 +51,21 @@ router.get('/balance', async (req, res) => {
     }
 
     console.log('🔍 Buscando saldo real da Deriv para usuário:', user.id);
-    console.log('🔑 Token sendo usado:', user.deriv_api_token);
+    console.log('🔑 Token sendo usado:', derivToken);
 
     // Usar app_id padrão se não tiver um configurado
-    const appId = user.deriv_app_id || process.env.DERIV_APP_ID || '1089';
+    const appId = user.getDerivAppId() || process.env.DERIV_APP_ID || '1089';
     console.log('🔧 App ID sendo usado:', appId);
     
-    // Usar URL simples sem detecção automática por enquanto
-    // O token que estava funcionando antes era demo, vamos usar demo por padrão
-    let wsUrl = `wss://ws.binaryws.com/websockets/v3?app_id=${appId}&l=demo`;
+    // Construir URL baseada no tipo de conta
+    const accountType = user.deriv_account_type || 'demo';
+    let wsUrl = `wss://ws.binaryws.com/websockets/v3?app_id=${appId}&l=${accountType}`;
     
-    console.log('🔗 URL WebSocket (demo):', wsUrl);
+    console.log(`🔗 URL WebSocket (${accountType}):`, wsUrl);
     
     const balance = await new Promise((resolve, reject) => {
       // Verificar se já existe uma conexão ativa para este token
-      const cacheKey = `${user.deriv_api_token}_${appId}`;
+      const cacheKey = `${derivToken}_${appId}`;
       let ws = connectionCache.get(cacheKey);
       
       if (ws && ws.readyState === WebSocket.OPEN) {
@@ -132,7 +133,7 @@ router.get('/balance', async (req, res) => {
         
         // Enviar autorização
         const authMessage = {
-          authorize: user.deriv_api_token
+          authorize: derivToken
         };
         console.log('📤 Enviando autorização:', authMessage);
         ws.send(JSON.stringify(authMessage));
@@ -251,7 +252,8 @@ router.post('/execute-trade', async (req, res) => {
       });
     }
 
-    if (!user.deriv_api_token) {
+    const derivToken = user.getDerivToken();
+    if (!derivToken) {
       return res.status(403).json({
         status: 'error',
         message: 'Token da Deriv não configurado'
@@ -263,7 +265,7 @@ router.post('/execute-trade', async (req, res) => {
     console.log('🚀 Executando trade real na Deriv:', { pair, type, amount, user: user.id });
 
     // Executar trade real na Deriv via WebSocket
-    const tradeResult = await executeRealTrade(user.deriv_api_token, {
+    const tradeResult = await executeRealTrade(derivToken, {
       pair,
       type,
       amount,

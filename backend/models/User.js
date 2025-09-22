@@ -157,6 +157,141 @@ class User {
       throw error;
     }
   }
+
+  // Métodos para configurações de trading
+  static async updateTradingSettings(userId, settings) {
+    try {
+      const updateFields = [];
+      const values = [];
+
+      // Mapear configurações para campos do banco
+      const fieldMapping = {
+        stopWin: 'stop_win',
+        stopLoss: 'stop_loss',
+        martingaleEnabled: 'martingale_enabled',
+        martingaleMultiplier: 'martingale_multiplier',
+        maxMartingaleLevels: 'max_martingale_levels',
+        tradeAmount: 'trade_amount',
+        maxDailyTrades: 'max_daily_trades',
+        riskPerTrade: 'risk_per_trade',
+        aiConfidenceThreshold: 'ai_confidence_threshold',
+        aiAnalysisInterval: 'ai_analysis_interval',
+        tradingPairs: 'trading_pairs',
+        tradingHoursStart: 'trading_hours_start',
+        tradingHoursEnd: 'trading_hours_end',
+        autoTradingEnabled: 'auto_trading_enabled',
+        ticketQuantity: 'ticket_quantity',
+        tradeCooldown: 'trade_cooldown'
+      };
+
+      for (const [key, value] of Object.entries(settings)) {
+        const dbField = fieldMapping[key];
+        if (dbField) {
+          updateFields.push(`${dbField} = ?`);
+          values.push(typeof value === 'object' ? JSON.stringify(value) : value);
+        }
+      }
+
+      if (updateFields.length === 0) {
+        throw new Error('Nenhuma configuração válida fornecida');
+      }
+
+      values.push(userId);
+
+      const result = await execute(
+        `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`,
+        values
+      );
+
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error('Erro ao atualizar configurações de trading:', error);
+      throw error;
+    }
+  }
+
+  static async getTradingSettings(userId) {
+    try {
+      const sql = `
+        SELECT 
+          stop_win, stop_loss, martingale_enabled, martingale_multiplier,
+          max_martingale_levels, trade_amount, max_daily_trades, risk_per_trade,
+          ai_confidence_threshold, ai_analysis_interval, trading_pairs,
+          trading_hours_start, trading_hours_end, auto_trading_enabled,
+          ticket_quantity, trade_cooldown
+        FROM users WHERE id = ?
+      `;
+      const rows = await query(sql, [userId]);
+      
+      if (rows.length === 0) {
+        return this.getDefaultTradingSettings();
+      }
+
+      const settings = rows[0];
+      
+      // Converter JSON strings de volta para objetos
+      if (settings.trading_pairs && typeof settings.trading_pairs === 'string') {
+        try {
+          settings.trading_pairs = JSON.parse(settings.trading_pairs);
+        } catch (e) {
+          settings.trading_pairs = ['R_10', 'R_25', 'R_50'];
+        }
+      }
+
+      return {
+        stopWin: settings.stop_win || 50,
+        stopLoss: settings.stop_loss || 100,
+        martingaleEnabled: settings.martingale_enabled || false,
+        martingaleMultiplier: settings.martingale_multiplier || 2.0,
+        maxMartingaleLevels: settings.max_martingale_levels || 3,
+        tradeAmount: settings.trade_amount || 5,
+        maxDailyTrades: settings.max_daily_trades || 50,
+        riskPerTrade: settings.risk_per_trade || 1.0,
+        aiConfidenceThreshold: settings.ai_confidence_threshold || 60,
+        aiAnalysisInterval: settings.ai_analysis_interval || 10,
+        tradingPairs: settings.trading_pairs || ['R_10', 'R_25', 'R_50'],
+        tradingHoursStart: settings.trading_hours_start || '00:00',
+        tradingHoursEnd: settings.trading_hours_end || '23:59',
+        autoTradingEnabled: settings.auto_trading_enabled || false,
+        ticketQuantity: settings.ticket_quantity || 10,
+        tradeCooldown: settings.trade_cooldown || 5
+      };
+    } catch (error) {
+      console.error('Erro ao obter configurações de trading:', error);
+      return this.getDefaultTradingSettings();
+    }
+  }
+
+  static getDefaultTradingSettings() {
+    return {
+      stopWin: 50,
+      stopLoss: 100,
+      martingaleEnabled: false,
+      martingaleMultiplier: 2.0,
+      maxMartingaleLevels: 3,
+      tradeAmount: 5,
+      maxDailyTrades: 50,
+      riskPerTrade: 1.0,
+      aiConfidenceThreshold: 60,
+      aiAnalysisInterval: 10,
+      tradingPairs: ['R_10', 'R_25', 'R_50'],
+        tradingHoursStart: '00:00',
+        tradingHoursEnd: '23:59',
+        autoTradingEnabled: false,
+        ticketQuantity: 10,
+        tradeCooldown: 5
+    };
+  }
+
+  static async resetTradingSettings(userId) {
+    try {
+      const defaultSettings = this.getDefaultTradingSettings();
+      return await this.updateTradingSettings(userId, defaultSettings);
+    } catch (error) {
+      console.error('Erro ao resetar configurações de trading:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = User;
