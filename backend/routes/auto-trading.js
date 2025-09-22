@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const AutoTrader = require('../core/autoTrader');
+const AITrader = require('../core/aiTrader');
 const authMiddleware = require('../middleware/auth');
 const { tradingLimiter } = require('../middleware/rateLimiting');
 
 // Armazenar instâncias de traders por usuário
 const traders = new Map();
+
+// Instância global da IA para auto-trading
+const aiTrader = new AITrader();
 
 // Middleware para obter trader do usuário
 const getTrader = async (req, res, next) => {
@@ -250,6 +254,130 @@ router.delete('/cleanup', authMiddleware, (req, res) => {
         res.status(500).json({
             status: 'error',
             message: 'Erro interno do servidor'
+        });
+    }
+});
+
+// Iniciar auto-trading com IA
+router.post('/start-ai', tradingLimiter, authMiddleware, getTrader, async (req, res) => {
+    try {
+        const { 
+            symbols = ['BTCUSD'], 
+            maxTradesPerDay = 10, 
+            riskPerTrade = 0.02,
+            useAI = true,
+            aiConfidence = 0.7
+        } = req.body;
+        
+        const userId = req.userId;
+        const trader = req.trader;
+        
+        console.log(`🤖 Iniciando auto-trading com IA para usuário ${userId}`);
+        
+        if (trader.isRunning) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Auto-trading já está em execução'
+            });
+        }
+        
+        // Configurar trader com parâmetros da IA
+        const config = {
+            symbols,
+            maxTradesPerDay,
+            riskPerTrade,
+            useAI,
+            aiConfidence,
+            aiTrader: useAI ? aiTrader : null
+        };
+        
+        await trader.start(config);
+        
+        console.log(`✅ Auto-trading com IA iniciado para usuário ${userId}`);
+        
+        res.json({
+            status: 'success',
+            message: 'Auto-trading com IA iniciado com sucesso',
+            data: {
+                userId,
+                symbols,
+                maxTradesPerDay,
+                riskPerTrade,
+                useAI,
+                aiConfidence,
+                startedAt: new Date().toISOString()
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erro ao iniciar auto-trading com IA:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Erro interno do servidor',
+            error: error.message
+        });
+    }
+});
+
+// Obter status da IA no auto-trading
+router.get('/ai-status', authMiddleware, (req, res) => {
+    try {
+        const aiStatus = aiTrader.getStatus();
+        const performance = aiTrader.getPerformanceMetrics();
+        
+        res.json({
+            status: 'success',
+            message: 'Status da IA obtido com sucesso',
+            data: {
+                aiStatus,
+                performance,
+                timestamp: new Date().toISOString()
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erro ao obter status da IA:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Erro interno do servidor',
+            error: error.message
+        });
+    }
+});
+
+// Atualizar resultado do trade na IA
+router.post('/update-ai-result', authMiddleware, (req, res) => {
+    try {
+        const { tradeId, profit, symbol, tradeType } = req.body;
+        
+        console.log(`📊 Atualizando resultado do trade na IA: ${tradeId}`);
+        
+        // Atualizar métricas de performance da IA
+        aiTrader.updatePerformance({
+            id: tradeId,
+            profit: profit,
+            symbol: symbol,
+            type: tradeType,
+            timestamp: Date.now()
+        });
+        
+        res.json({
+            status: 'success',
+            message: 'Resultado do trade atualizado na IA',
+            data: {
+                tradeId,
+                profit,
+                updatedMetrics: aiTrader.getPerformanceMetrics(),
+                timestamp: new Date().toISOString()
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erro ao atualizar resultado na IA:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Erro interno do servidor',
+            error: error.message
         });
     }
 });

@@ -540,4 +540,7 @@ async function executeRealTrade(token, tradeParams) {
   });
 }
 
-module.exports = router;
+module.exports = {
+  router,
+  executeRealTrade
+};

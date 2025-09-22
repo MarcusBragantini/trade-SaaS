@@ -106,7 +106,9 @@ class User {
       },
       balance: this.balance,
       lastLogin: this.last_login,
-      canTrade: this.canTrade()
+      canTrade: this.canTrade(),
+      deriv_api_token: this.deriv_api_token,
+      deriv_app_id: this.deriv_app_id
     };
   }
 

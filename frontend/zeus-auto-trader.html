@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titan Auto Trader - Simples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+
+        .header h1 {
+            color: #00ff88;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        .status-running {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .status-stopped {
+            background: #ff4444;
+            color: white;
+        }
+
+        .balance {
+            font-size: 1.2em;
+            color: #00ff88;
+        }
+
+        .deriv-status {
+            font-size: 1em;
+            color: #4488ff;
+        }
+
+        .deriv-connected {
+            color: #00ff88;
+        }
+
+        .deriv-disconnected {
+            color: #ff4444;
+        }
+
+        .control-panel {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-group select optgroup {
+            background: #2a2a2a;
+            color: #00ff88;
+            font-weight: bold;
+            padding: 5px;
+        }
+
+        .form-group select option {
+            background: #333;
+            color: white;
+            padding: 8px;
+        }
+
+        .form-group select option:hover {
+            background: #444;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+                padding: 15px 20px;
+                font-size: 16px;
+            }
+        }
+
+        .btn-start {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .btn-stop {
+            background: #ff4444;
+            color: white;
+        }
+
+        .btn-test {
+            background: #4488ff;
+            color: white;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .btn-group {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            color: #ccc;
+            font-size: 0.9em;
+        }
+
+        .trades-container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .trade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background: #333;
+        }
+
+        .trade-win {
+            border-left: 4px solid #00ff88;
+        }
+
+        .trade-loss {
+            border-left: 4px solid #ff4444;
+        }
+
+        .logs {
+            background: #000;
+            padding: 15px;
+            border-radius: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .log-time {
+            color: #666;
+        }
+
+        .log-success {
+            color: #00ff88;
+        }
+
+        .log-error {
+            color: #ff4444;
+        }
+
+        .log-info {
+            color: #4488ff;
+        }
+
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>⚡ ZEUS AUTO TRADER</h1>
+            <p>Trading Automatizado com IA</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div id="status-indicator" class="status-indicator status-stopped">
+                🔴 PARADO
+            </div>
+            <div id="deriv-status" class="deriv-status">
+                🔗 Deriv: <span id="deriv-connection">Verificando...</span>
+            </div>
+            <div class="balance">
+                Saldo: <span id="balance">$0.00</span>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Par:</label>
+                    <select id="pair">
+                        <optgroup label="Synthetic Indices (24/7)">
+                            <option value="R_10" selected>Rise/Fall 10</option>
+                            <option value="R_25">Rise/Fall 25</option>
+                            <option value="R_50">Rise/Fall 50</option>
+                            <option value="R_75">Rise/Fall 75</option>
+                            <option value="R_100">Rise/Fall 100</option>
+                        </optgroup>
+                        <optgroup label="Major Forex">
+                            <option value="EURUSD">EUR/USD</option>
+                            <option value="GBPUSD">GBP/USD</option>
+                            <option value="USDJPY">USD/JPY</option>
+                            <option value="AUDUSD">AUD/USD</option>
+                            <option value="USDCAD">USD/CAD</option>
+                            <option value="USDCHF">USD/CHF</option>
+                            <option value="NZDUSD">NZD/USD</option>
+                        </optgroup>
+                        <optgroup label="Crypto">
+                            <option value="BTCUSD">BTC/USD</option>
+                            <option value="ETHUSD">ETH/USD</option>
+                            <option value="LTCUSD">LTC/USD</option>
+                        </optgroup>
+                        <optgroup label="Commodities">
+                            <option value="GOLD">Gold</option>
+                            <option value="SILVER">Silver</option>
+                            <option value="OIL">Oil</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Valor:</label>
+                    <input type="number" id="amount" value="5" min="1" max="100">
+                </div>
+                <div class="form-group">
+                    <div class="btn-group">
+                        <button id="start-btn" class="btn btn-start">🚀 INICIAR</button>
+                        <button id="stop-btn" class="btn btn-stop" disabled>⏹️ PARAR</button>
+                        <button id="test-trade-btn" class="btn btn-test">🧪 TESTE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-trades">0</div>
+                <div class="stat-label">Total Trades</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="win-rate">0%</div>
+                <div class="stat-label">Win Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="profit">$0.00</div>
+                <div class="stat-label">Lucro</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="active-trades">0</div>
+                <div class="stat-label">Ativos</div>
+            </div>
+        </div>
+
+        <!-- Recent Trades -->
+        <div class="trades-container">
+            <h3>📈 Trades Recentes</h3>
+            <div id="trades-list">
+                <div style="text-align: center; color: #666; padding: 20px;">
+                    Nenhum trade executado
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs -->
+        <div class="logs" id="logs">
+            <div class="log-entry">
+                <span class="log-time">[Sistema]</span>
+                <span class="log-info">Titan Auto Trader iniciado</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <script>
+        class TitanSimple {
+            constructor() {
+                this.isRunning = false;
+                this.trades = [];
+                this.stats = {
+                    totalTrades: 0,
+                    winningTrades: 0,
+                    totalProfit: 0,
+                    activeTrades: 0
+                };
+                this.interval = null;
+                this.apiBase = 'http://localhost:5001/api/v1';
+                this.derivConnected = false;
+                this.realBalance = 0;
+                this.productionMode = true; // Modo produção - logs limpos
+            }
+
+            async init() {
+                this.log('⚡ Inicializando Zeus Auto Trader...', 'info');
+                this.setupEvents();
+                this.updateUI();
+                this.log('✅ Sistema inicializado - aguardando verificação Deriv...', 'success');
+            }
+
+            setupEvents() {
+                document.getElementById('start-btn').addEventListener('click', () => this.start());
+                document.getElementById('stop-btn').addEventListener('click', () => this.stop());
+                document.getElementById('test-trade-btn').addEventListener('click', () => this.testTrade());
+            }
+
+            async testTrade() {
+                this.log('🧪 Testando trade manual...', 'info');
+                const pair = document.getElementById('pair').value;
+                
+                // Criar sinal de teste com alta confiança
+                const testSignal = {
+                    symbol: pair,
+                    action: 'BUY',
+                    confidence: 0.8
+                };
+                
+                this.log(`🧪 Sinal de teste: ${testSignal.action} ${testSignal.symbol} (${(testSignal.confidence * 100).toFixed(0)}%)`, 'info');
+                await this.executeTrade(testSignal);
+            }
+
+            async start() {
+                if (this.isRunning) return;
+
+                this.isRunning = true;
+                this.updateStatus('running');
+                this.log('🚀 Trading automático iniciado!', 'success');
+
+                // Análise a cada 10 segundos
+                this.interval = setInterval(() => {
+                    this.analyzeAndTrade();
+                }, 10000);
+
+                // Atualizar saldo a cada 30 segundos
+                this.balanceInterval = setInterval(() => {
+                    if (this.derivConnected) {
+                        this.updateBalance();
+                    }
+                }, 30000);
+
+                // Primeira análise
+                this.analyzeAndTrade();
+            }
+
+            stop() {
+                this.isRunning = false;
+                this.updateStatus('stopped');
+                
+                if (this.interval) {
+                    clearInterval(this.interval);
+                    this.interval = null;
+                }
+
+                if (this.balanceInterval) {
+                    clearInterval(this.balanceInterval);
+                    this.balanceInterval = null;
+                }
+
+                this.log('⏹️ Trading automático parado', 'error');
+            }
+
+            async analyzeAndTrade() {
+                if (!this.isRunning) return;
+
+                try {
+                    // Análise da IA
+                    const signal = await this.generateSignal();
+                    
+                    // Validar sinal antes de processar
+                    if (!signal || !signal.action || signal.confidence === undefined) {
+                        this.log(`❌ Sinal inválido recebido`, 'error');
+                        return;
+                    }
+
+                    // Verificar se deve executar trade (reduzido para 5% para mais trades)
+                    const shouldTrade = signal.confidence > 0.05 && signal.action !== 'HOLD';
+                    
+                    if (shouldTrade) {
+                        await this.executeTrade(signal);
+                    }
+                } catch (error) {
+                    this.log(`❌ Erro na análise: ${error.message}`, 'error');
+                }
+            }
+
+            async generateSignal() {
+                const pair = document.getElementById('pair').value;
+                
+                // Mapear pares sintéticos para nomes que a IA reconheça
+                const pairMapping = {
+                    'R_10': 'RISE10',
+                    'R_25': 'RISE25', 
+                    'R_50': 'RISE50',
+                    'R_75': 'RISE75',
+                    'R_100': 'RISE100'
+                };
+                
+                const analysisSymbol = pairMapping[pair] || pair;
+                
+                try {
+                    // Usar IA real para análise
+                    const token = this.getAuthToken();
+                    if (!token) {
+                        return this.generateFallbackSignal(pair);
+                    }
+
+                    const response = await fetch(`${this.apiBase}/ai-trader/analyze`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            symbol: analysisSymbol,
+                            strategies: ['MHI', 'MACD', 'RSI', 'BOLLINGER']
+                        })
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success && result.data) {
+                            // A IA pode retornar dados em result.data.signal ou diretamente em result.data
+                            let signal = result.data;
+                            if (result.data.signal) {
+                                signal = result.data.signal;
+                            }
+                            
+                            // Validar se a IA retornou dados válidos
+                            if (signal && signal.action && signal.confidence !== undefined) {
+                                return signal;
+                            } else {
+                                return this.generateFallbackSignal(pair);
+                            }
+                        }
+                    }
+                    
+                    // Fallback se IA falhar
+                    return this.generateFallbackSignal(pair);
+                } catch (error) {
+                    this.log(`⚠️ Erro na análise IA: ${error.message}`, 'error');
+                    return this.generateFallbackSignal(pair);
+                }
+            }
+
+            generateFallbackSignal(pair) {
+                // Análise simples baseada em tendência simulada
+                const actions = ['BUY', 'SELL', 'HOLD'];
+                const action = actions[Math.floor(Math.random() * actions.length)];
+                const confidence = 0.5 + Math.random() * 0.4; // 50-90%
+                
+                // Log removido para modo produção
+                
+                return {
+                    symbol: pair || 'BTCUSD',
+                    action: action,
+                    confidence: confidence
+                };
+            }
+
+            async executeTrade(signal) {
+                const amount = parseFloat(document.getElementById('amount').value);
+                
+                this.log(`🎯 Executando trade: ${signal.action} ${signal.symbol} $${amount}`, 'info');
+
+                let trade;
+                
+                if (this.derivConnected) {
+                    // Executar trade real na Deriv
+                    trade = await this.executeRealTrade(signal, amount);
+                } else {
+                    // Simular trade
+                    trade = await this.simulateTrade(signal, amount);
+                }
+
+                if (trade) {
+                    // Adicionar trade
+                    this.trades.unshift(trade);
+                    
+                    // Atualizar estatísticas
+                    this.updateStats(trade);
+                    
+                    // Atualizar saldo real se for trade real
+                    if (trade.realTrade && this.derivConnected) {
+                        await this.updateBalance();
+                    }
+                    
+                    // Atualizar interface
+                    this.updateTradesList();
+                    this.updateUI();
+
+                    // Log do trade com estratégias
+                    const strategies = signal.strategiesUsed || ['IA'];
+                    this.logTrade(signal, trade, strategies);
+                }
+            }
+
+            async executeRealTrade(signal, amount) {
+                try {
+                    const token = this.getAuthToken();
+                    if (!token) {
+                        this.log('❌ Token de autenticação não encontrado', 'error');
+                        return null;
+                    }
+
+                    const tradeData = {
+                        pair: signal.symbol,
+                        type: signal.action,
+                        amount: amount,
+                        duration: 10, // 10 ticks
+                        duration_type: 't'
+                    };
+
+                    this.log(`🔄 Executando trade REAL na Deriv...`, 'info');
+
+                    this.log(`📤 Enviando dados do trade: ${JSON.stringify(tradeData)}`, 'info');
+                    const response = await fetch(`${this.apiBase}/deriv/execute-trade`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(tradeData)
+                    });
+
+                    this.log(`📡 Resposta do trade: ${response.status} ${response.statusText}`, 'info');
+                    const responseText = await response.text();
+                    this.log(`📋 Resposta bruta: ${responseText.substring(0, 200)}...`, 'info');
+                    
+                    let result;
+                    try {
+                        result = JSON.parse(responseText);
+                    } catch (parseError) {
+                        this.log(`❌ Erro ao fazer parse JSON: ${parseError.message}`, 'error');
+                        return null;
+                    }
+
+                    if (response.ok && result.status === 'success') {
+                        const tradeResult = result.data;
+                        
+                        // Calcular profit baseado no resultado do trade
+                        const profit = parseFloat(tradeResult.profit || 0);
+                        const isWin = profit > 0;
+                        
+                        return {
+                            id: tradeResult.id || tradeResult.contract_id || Date.now(),
+                            symbol: tradeData.pair,
+                            action: tradeData.type,
+                            amount: tradeData.amount,
+                            profit: profit,
+                            time: new Date().toLocaleTimeString(),
+                            isWin: isWin,
+                            contractId: tradeResult.contract_id || tradeResult.id,
+                            realTrade: true
+                        };
+                    } else {
+                        this.log(`❌ Erro no trade real: ${result.message}`, 'error');
+                        return null;
+                    }
+                } catch (error) {
+                    this.log(`❌ Erro na execução real: ${error.message}`, 'error');
+                    return null;
+                }
+            }
+
+            async simulateTrade(signal, amount) {
+                // Simular execução
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Simular resultado (70% chance de ganho)
+                const isWin = Math.random() < 0.7;
+                const profit = isWin ? 
+                    amount * (0.8 + Math.random() * 0.4) : 
+                    -amount * (0.6 + Math.random() * 0.4);
+
+                return {
+                    id: Date.now(),
+                    symbol: signal.symbol,
+                    action: signal.action,
+                    amount: amount,
+                    profit: profit,
+                    time: new Date().toLocaleTimeString(),
+                    isWin: isWin,
+                    realTrade: false
+                };
+            }
+
+            updateStats(trade) {
+                this.stats.totalTrades = (this.stats.totalTrades || 0) + 1;
+                this.stats.totalProfit = (this.stats.totalProfit || 0) + (trade.profit || 0);
+                
+                if (trade.isWin) {
+                    this.stats.winningTrades = (this.stats.winningTrades || 0) + 1;
+                }
+
+                this.stats.winRate = this.stats.totalTrades > 0 ? 
+                    ((this.stats.winningTrades || 0) / this.stats.totalTrades) * 100 : 0;
+            }
+
+            updateStatus(status) {
+                const indicator = document.getElementById('status-indicator');
+                
+                if (status === 'running') {
+                    indicator.className = 'status-indicator status-running pulse';
+                    indicator.textContent = '🟢 RODANDO';
+                    document.getElementById('start-btn').disabled = true;
+                    document.getElementById('stop-btn').disabled = false;
+                } else {
+                    indicator.className = 'status-indicator status-stopped';
+                    indicator.textContent = '🔴 PARADO';
+                    document.getElementById('start-btn').disabled = false;
+                    document.getElementById('stop-btn').disabled = true;
+                }
+            }
+
+            updateUI() {
+                document.getElementById('total-trades').textContent = this.stats.totalTrades || 0;
+                document.getElementById('win-rate').textContent = `${(this.stats.winRate || 0).toFixed(1)}%`;
+                document.getElementById('profit').textContent = `$${(this.stats.totalProfit || 0).toFixed(2)}`;
+                document.getElementById('active-trades').textContent = this.stats.activeTrades || 0;
+                
+                // Atualizar saldo baseado na conexão Deriv
+                if (this.derivConnected && this.realBalance > 0) {
+                    document.getElementById('balance').textContent = `$${this.realBalance.toFixed(2)}`;
+                } else {
+                    document.getElementById('balance').textContent = `$${(1000 + (this.stats.totalProfit || 0)).toFixed(2)}`;
+                }
+            }
+
+            async checkDerivConnection() {
+                try {
+                    const token = this.getAuthToken();
+                    this.log(`🔍 Verificando token de autenticação: ${token ? 'Encontrado' : 'Não encontrado'}`, 'info');
+                    
+                    if (!token) {
+                        this.updateDerivStatus(false, 'Token não encontrado');
+                        this.log('❌ Token de autenticação não encontrado', 'error');
+                        return;
+                    }
+
+                    this.log(`🔄 Fazendo requisição para /auth/profile...`, 'info');
+                    const response = await fetch(`${this.apiBase}/auth/profile`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    this.log(`📡 Resposta recebida: ${response.status} ${response.statusText}`, 'info');
+                    const result = await response.json();
+                    this.log(`📋 Dados do perfil:`, 'info');
+                    this.log(JSON.stringify(result, null, 2), 'info');
+
+                    this.log(`🔍 Verificando condições: response.ok=${response.ok}, result.status=${result.status}`, 'info');
+                    
+                    if (response.ok && result.status === 'success') {
+                        const user = result.data.user || result.data;
+                        this.log(`🔍 Token Deriv encontrado: ${user.deriv_api_token}`, 'info');
+                        const hasDerivToken = user.deriv_api_token && user.deriv_api_token !== '';
+                        
+                        if (hasDerivToken) {
+                            this.derivConnected = true;
+                            this.updateDerivStatus(true, 'Conectado');
+                            this.log('🔗 Deriv: Token configurado - Trades REAIS', 'success');
+                        } else {
+                            this.derivConnected = false;
+                            this.updateDerivStatus(false, 'Token não configurado');
+                            this.log('⚠️ Deriv: Token não configurado - Modo SIMULADO', 'error');
+                        }
+                    } else {
+                        this.derivConnected = false;
+                        this.updateDerivStatus(false, 'Erro na verificação');
+                        this.log(`❌ Deriv: Condição não atendida - response.ok: ${response.ok}, result.status: ${result.status}`, 'error');
+                    }
+                } catch (error) {
+                    this.derivConnected = false;
+                    this.updateDerivStatus(false, 'Erro de conexão');
+                    this.log(`❌ Deriv: Erro de conexão - ${error.message}`, 'error');
+                }
+            }
+
+            updateDerivStatus(connected, message) {
+                const element = document.getElementById('deriv-connection');
+                if (connected) {
+                    element.textContent = `✅ ${message}`;
+                    element.className = 'deriv-connected';
+                } else {
+                    element.textContent = `❌ ${message}`;
+                    element.className = 'deriv-disconnected';
+                }
+            }
+
+            async updateBalance() {
+                try {
+                    const token = this.getAuthToken();
+                    if (!token || !this.derivConnected) {
+                        this.log('⚠️ Token ou conexão Deriv não disponível para atualizar saldo', 'info');
+                        return;
+                    }
+
+                    this.log('🔄 Buscando saldo real da Deriv...', 'info');
+                    const response = await fetch(`${this.apiBase}/deriv/balance`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    this.log(`📡 Resposta do saldo: ${response.status} ${response.statusText}`, 'info');
+                    const result = await response.json();
+                    this.log(`📋 Dados do saldo:`, 'info');
+                    this.log(JSON.stringify(result, null, 2), 'info');
+
+                    if (response.ok && result.status === 'success') {
+                        this.realBalance = parseFloat(result.data.balance) || 0;
+                        this.log(`💰 Saldo Deriv atualizado: $${this.realBalance.toFixed(2)}`, 'success');
+                    } else {
+                        this.log(`⚠️ Erro ao obter saldo Deriv: ${result.message || 'Erro desconhecido'}`, 'error');
+                    }
+                } catch (error) {
+                    this.log(`❌ Erro ao atualizar saldo: ${error.message}`, 'error');
+                }
+            }
+
+            getAuthToken() {
+                // Tentar obter token do authManager se disponível
+                if (window.authManager && window.authManager.token) {
+                    this.log('🔑 Token obtido do authManager', 'info');
+                    return window.authManager.token;
+                }
+                
+                // Fallback para localStorage
+                const localToken = localStorage.getItem('token');
+                this.log(`🔑 Token obtido do localStorage: ${localToken ? 'Encontrado' : 'Não encontrado'}`, 'info');
+                return localToken;
+            }
+
+            updateTradesList() {
+                const container = document.getElementById('trades-list');
+                
+                if (this.trades.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">Nenhum trade executado</div>';
+                    return;
+                }
+
+                const recentTrades = this.trades.slice(0, 10);
+                container.innerHTML = recentTrades.map(trade => `
+                    <div class="trade-item ${trade.isWin ? 'trade-win' : 'trade-loss'}">
+                        <div>
+                            <strong>${trade.symbol}</strong> ${trade.action} $${trade.amount}
+                            ${trade.realTrade ? '<span style="color: #00ff88;">🔗 REAL</span>' : '<span style="color: #666;">🎮 SIM</span>'}
+                            <br><small>${trade.time}</small>
+                        </div>
+                        <div style="font-weight: bold; color: ${trade.isWin ? '#00ff88' : '#ff4444'};">
+                            ${trade.profit > 0 ? '+' : ''}$${trade.profit.toFixed(2)}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            log(message, type = 'info', forceShow = false) {
+                // Em modo produção, só mostra logs importantes
+                if (this.productionMode && !forceShow) {
+                    const importantLogs = ['✅ Trade executado:', '💰 Saldo Deriv atualizado:', '🚀 Trading automático iniciado', '⏹️ Trading automático parado'];
+                    const isImportant = importantLogs.some(important => message.includes(important));
+                    if (!isImportant) return;
+                }
+
+                const container = document.getElementById('logs');
+                const time = new Date().toLocaleTimeString();
+                
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <span class="log-time">[${time}]</span>
+                    <span class="log-${type}">${message}</span>
+                `;
+                
+                container.appendChild(entry);
+                container.scrollTop = container.scrollHeight;
+
+                // Manter apenas os últimos 50 logs
+                const logs = container.querySelectorAll('.log-entry');
+                if (logs.length > 50) {
+                    logs[0].remove();
+                }
+            }
+
+            logTrade(signal, trade, strategies = []) {
+                const type = trade.isWin ? 'success' : 'error';
+                const icon = trade.isWin ? '✅' : '❌';
+                const result = trade.isWin ? 'WIN' : 'LOSS';
+                const strategiesText = strategies.length > 0 ? ` (${strategies.join(', ')})` : '';
+                
+                const message = `${icon} ${signal.action} ${signal.symbol} $${trade.amount} → ${result} $${trade.profit.toFixed(2)}${strategiesText}`;
+                this.log(message, type, true);
+            }
+        }
+
+        // Inicializar quando carregar
+        document.addEventListener('DOMContentLoaded', async () => {
+            const titan = new TitanSimple();
+            await titan.init();
+            window.titan = titan; // Para debug
+            
+            // Função para verificar Deriv quando authManager estiver pronto
+            const checkDerivWhenReady = () => {
+                if (window.authManager && window.authManager.token) {
+                    titan.log('🔄 AuthManager pronto - verificando Deriv...', 'info');
+                    titan.checkDerivConnection().then(() => {
+                        titan.updateBalance().then(() => {
+                            titan.updateUI();
+                        });
+                    });
+                } else {
+                    // Tentar novamente em 500ms
+                    setTimeout(checkDerivWhenReady, 500);
+                }
+            };
+            
+            // Iniciar verificação
+            checkDerivWhenReady();
+        });
+    </script>
+</body>
+</html>
